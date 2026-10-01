@@ -3541,7 +3541,19 @@ function hwpxLines(vals){
 function hwpxIdx(lines,v){let bi=0,bd=Infinity;lines.forEach((x,i)=>{const d=Math.abs(x-v);if(d<bd){bd=d;bi=i;}});return bi;}
 function hwpxSide(cs,side){return parseFloat(cs['border'+side+'Width'])>0.3&&cs['border'+side+'Style']!=='none'&&cs['border'+side+'Style']!=='hidden';}
 
+/* 입력칸(input·select·textarea)의 값은 글로 읽히지 않으므로, 잠깐 같은 자리에 글(span)로 바꿔 놓고 변환한 뒤 되돌림 */
 function hwpxBuild(papers){
+  const swaps=[];
+  papers.forEach(p=>p.querySelectorAll('input,select,textarea').forEach(c=>{
+    if(hwpxHidden(c)||c.type==='hidden'||c.type==='file')return;
+    const v=(c.type==='checkbox'||c.type==='radio')?(c.checked?'☑':'☐'):c.tagName==='SELECT'?((c.options[c.selectedIndex]||{}).text||''):c.value;
+    const sp=document.createElement('span');sp.textContent=v||'　';sp.style.whiteSpace='pre-wrap';
+    c.after(sp);swaps.push([c,sp,c.style.display]);c.style.display='none';
+  }));
+  try{return hwpxBuildCore(papers);}
+  finally{swaps.forEach(([c,sp,d])=>{sp.remove();c.style.display=d;});}
+}
+function hwpxBuildCore(papers){
   const charPrs=[],charIds={},paraPrs=[],paraIds={},bfs=[],bfIds={};
   const charId=(pt,bold)=>{const h=Math.max(100,Math.round(pt*100)),k=h+'|'+(bold?1:0);if(!(k in charIds)){charIds[k]=charPrs.length;charPrs.push({h,bold});}return charIds[k];};
   const paraId=(align,ls,left=0,right=0,prev=0)=>{const k=[align,ls,left,right,prev].join('|');if(!(k in paraIds)){paraIds[k]=paraPrs.length;paraPrs.push({align,ls,left,right,prev});}return paraIds[k];};
@@ -3573,18 +3585,26 @@ function hwpxBuild(papers){
       if(onePage&&over>0)g=Math.max(0,g-over);
       return Math.round(g*S*0.95);
     };
+    // 표 바로 다음의 간격은 한글이 다음 문단의 '위 간격'을 무시하므로 앞 표의 아래 바깥 여백으로 넣음
+    let lastTbl=-1;
+    const gapAfterTable=(g)=>{
+      if(lastTbl<0||lastTbl!==body.length-1)return false;
+      body[lastTbl]=body[lastTbl].replace('<hp:outMargin left="0" right="0" top="0" bottom="0"/>',`<hp:outMargin left="0" right="0" top="0" bottom="${g}"/>`);
+      return true;
+    };
     for(const blk of hwpxBlocks(paper)){
       if(blk.type==='text'){
         const el=blk.el,ecs=getComputedStyle(el),er=el.getBoundingClientRect();
         const left=Math.max(0,Math.round((er.left+parseFloat(ecs.borderLeftWidth)+parseFloat(ecs.paddingLeft)-cLeft)*S));
         const right=Math.max(0,Math.round((cRight-er.right+parseFloat(ecs.borderRightWidth)+parseFloat(ecs.paddingRight))*S));
         let prev=gapHU(er.top+parseFloat(ecs.paddingTop),er.bottom);
+        if(gapAfterTable(prev))prev=0;
         for(const p of hwpxParas(el)){body.push(paraXml(p,p.ls,{left,right,prev}));prev=0;prv.push(p.text);}
         lastBottom=er.bottom;
         continue;
       }
       const g=gapHU(blk.top,blk.bottom);
-      if(g>150)body.push(spacer(g));
+      if(!gapAfterTable(g)&&g>150)body.push(spacer(g));
       lastBottom=blk.bottom;
       const boxes=blk.boxes;
       const xs=hwpxLines(boxes.flatMap(b=>[b.rect.left,b.rect.right]));
@@ -3648,6 +3668,7 @@ function hwpxBuild(papers){
         `<hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="283" right="283" top="141" bottom="141"/>${rows}</hp:tbl>`;
       // 표를 싣는 문단은 1pt 글자 — 보통 글자면 표마다 빈 줄 높이(약 5mm)가 더해져 아래로 밀림
       body.push(`<hp:p paraPrIDRef="${tinyPara}" styleIDRef="0"><hp:run charPrIDRef="${tinyChar}">${tbl}</hp:run></hp:p>`);
+      lastTbl=body.length-1;
     }
     // 둘째 장부터는 새 쪽에서 시작
     if(pi>0&&body.length>firstIdx)body[firstIdx]=body[firstIdx].replace('<hp:p ','<hp:p pageBreak="1" ');
