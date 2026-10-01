@@ -479,6 +479,7 @@
           <input type="checkbox" id="tgChongkwal" checked style="width:auto"> 총괄표 0원 표시
         </label>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('paperHost',(document.getElementById('docKind').selectedOptions[0]||{}).textContent||'예산서')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closePreview()">← 입력으로 돌아가기</button>
       </div>
       <div id="paperHost"></div>
@@ -584,13 +585,38 @@
     <!-- ③ 의무전출 점검 -->
     <div class="card">
       <h2>③ 법정부담경비 의무전출 점검</h2>
-      <p class="desc">지침상 법정부담경비는 우선 전출해야 하며, 의무전출액이 부족한 법인은 투자비·상환금 등 다른 목적의 전출금을 편성할 수 없어요.</p>
+      <p class="desc">지침상 법정부담경비는 우선 전출해야 하며, 의무전출액이 부족한 법인은 전출금 중 <b>다른 목적의 목(학교운영비·시설비·교육청대응투자비·기타전출금)</b>을 편성할 수 없어요. ([별지 제2호] 전출금 ※ 목 4, 5, 7, 8)</p>
       <div class="summary-grid">
         <div class="sum-box"><div class="lbl">법정부담금 산정액(①)</div><div class="val" id="chkLegal">0</div></div>
         <div class="sum-box"><div class="lbl">법정부담 전출액(②)</div><div class="val" id="chkDone">0</div></div>
         <div class="sum-box bal" id="chkBox"><div class="lbl">전출 부족액</div><div class="val" id="chkGap">0</div></div>
       </div>
       <div class="balance-msg" id="chkMsg"></div>
+    </div>
+
+    <!-- ④ 수익용기본재산 수익 공제·의무전출액 계산 (지침 Ⅱ-5·6) -->
+    <div class="card">
+      <h2>④ 학교운영경비·법정부담경비 의무전출액 계산</h2>
+      <p class="desc">지침 Ⅱ-5·6과 「고등학교 이하 각급 학교 설립·운영 규정 시행규칙」 제10조 기준이에요. 수익용기본재산 총수입(A)에서 <b>① 제세공과금 → ② 학교법인운영필요경비 → ③ 법정부담경비</b> 순서로 뺀 뒤 의무전출액을 계산해요. <b>예산에서 불러오기</b>를 누르면 지금 작성 중인 세입·세출 예산으로 칸이 채워지고, 칸마다 직접 고칠 수도 있어요. (단위: 원)</p>
+      <div class="btn-row" style="margin:6px 0 12px">
+        <button class="btn" onclick="fillDutyFromBudget()">📥 예산(세입·세출)에서 불러오기</button>
+      </div>
+      <div class="form-line" style="gap:14px;flex-wrap:wrap" id="dutyInputs">
+        <div class="field"><label>수익용기본재산 총수입 (A)</label><input type="text" class="num" id="dtA" inputmode="numeric" style="width:160px"></div>
+        <div class="field"><label>제세공과금 (B)</label><input type="text" class="num" id="dtB" inputmode="numeric" style="width:140px"></div>
+        <div class="field"><label>운영비용 편성액 (이사회비·사무비·잡지출)</label><input type="text" class="num" id="dtOp" inputmode="numeric" style="width:160px"></div>
+        <div class="field"><label>수익비용 (사전승인 받은 수익용 건물수선비)</label><input type="text" class="num" id="dtRev" inputmode="numeric" style="width:160px"></div>
+        <div class="field"><label>법정부담경비 소요액 (①의 합계)</label><input type="text" class="num" id="dtNeed" inputmode="numeric" style="width:150px"></div>
+        <div class="field"><label>법정부담경비 전출액 (D)</label><input type="text" class="num" id="dtD" inputmode="numeric" style="width:150px"></div>
+        <div class="field"><label>학교운영비 전출액</label><input type="text" class="num" id="dtF" inputmode="numeric" style="width:140px"></div>
+        <div class="field"><label>다른 목적 전출액 (시설비·대응투자비·기타)</label><input type="text" class="num" id="dtEtc" inputmode="numeric" style="width:150px"></div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:12px">
+        <table class="grid" style="min-width:640px"><tbody id="dutyResult"></tbody></table>
+      </div>
+      <div class="balance-msg" id="dutyMsg"></div>
+      <p class="hint">※ 총수입(A) 자동 산출 범위: 기본재산수입(재산매각수입 제외)·사업수입·투자수입·전년도수입·전년도잉여금(이월사업비 제외)·물품매각수입·예금이자·잡수입(학교분 법인세환급금 제외). 기부목적 이월금, 관할청 허가로 처분한 기본재산 수입은 직접 빼 주세요.<br>
+      ※ 제세공과금은 수익용기본재산에 부과된 세금·보험료만이에요. 장애인고용부담금·자동차세·교육용재산 세금 등은 운영비용으로 봐요. 법정부담경비와 학교운영경비를 모두 전액 부담한 법인은 결산 때 전년도잉여금·물품매각수입·예금이자·잡수입을 총수입에 넣지 않아요(지침 Ⅱ-6-마).</p>
     </div>
   </div>
 
@@ -619,6 +645,7 @@
       <div class="doc-toolbar">
         <span class="t">📄 부속서식 미리보기 · A4 세로</span>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('formsPaperHost','부속서식')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeFormsPreview()">← 입력으로 돌아가기</button>
       </div>
       <div id="formsPaperHost"></div>
@@ -657,6 +684,7 @@
       <div class="doc-toolbar">
         <span class="t">🔍 감사보고서 미리보기 · A4 세로</span>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('auditPaperHost','감사보고서')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeAuditPreview()">← 입력으로 돌아가기</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 유의사항 (이 안내는 인쇄되지 않아요)</b><ul>
@@ -709,6 +737,7 @@
       <div class="doc-toolbar">
         <span class="t">📄 징수결의서 미리보기 · A4 세로</span>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('revenuePaperHost','징수결의서')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeRevenuePreview()">← 입력으로 돌아가기</button>
       </div>
       <div id="revenuePaperHost"></div>
@@ -726,6 +755,7 @@
       <div class="btn-row" style="margin-top:8px">
         <button class="btn" onclick="renderJingsubu()">🔄 최신 내용으로 새로고침</button>
         <button class="btn accent" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent" onclick="saveHwpx('jingsubuPaperHost','징수부')">📝 한글(HWPX) 저장</button>
       </div>
       <p class="hint">📌 각 건은 징수결정액·수입액을 동일 금액으로 전액 수납 처리해 두 줄로 표시합니다(미수액 관리는 지원하지 않음). 일자는 결의서의 <b>징수부등기일</b>(비어 있으면 발의일 등)을 기준으로 정렬·월계 처리해요. 예산액은 '본예산·추경·결산' 탭 이름 매칭으로 자동으로 채워지며, 아래에서 <b>직접 입력해 덮어쓸 수도</b> 있어요.</p>
     </div>
@@ -783,6 +813,7 @@
       <div class="doc-toolbar">
         <span class="t">📄 지출결의서 미리보기 · A4 세로</span>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('expensePaperHost','지출결의서_'+(document.getElementById('expYear').value||''))">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeExpensePreview()">← 입력으로 돌아가기</button>
       </div>
       <div id="expensePaperHost"></div>
@@ -800,6 +831,7 @@
       <div class="btn-row" style="margin-top:8px">
         <button class="btn" onclick="renderJichulbu()">🔄 최신 내용으로 새로고침</button>
         <button class="btn accent" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent" onclick="saveHwpx('jichulbuPaperHost','지출부')">📝 한글(HWPX) 저장</button>
       </div>
       <p class="hint">📌 지출액은 지출결의서의 <b>합계(공급가액+부가세+수수료)</b>를 기준으로 예산 소진액을 계산합니다. 일자는 결의서의 <b>지출부등기일</b>(비어 있으면 지출일 등)을 기준으로 정렬·월계 처리해요. 지출번호는 지출결의서의 증서번호(№)와 같습니다. 예산현액은 '본예산·추경·결산' 탭 이름 매칭으로 자동으로 채워지며, 아래에서 <b>직접 입력해 덮어쓸 수도</b> 있어요. (연중 추가경정에 따른 예산현액 변동은 반영하지 않음)</p>
     </div>
@@ -865,6 +897,7 @@
       <div class="doc-toolbar">
         <span class="t">📄 임원 현황 미리보기 · A4 세로</span>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('boardMemberPaperHost','임원현황')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeBoardMemberPreview()">← 입력으로 돌아가기</button>
       </div>
       <div id="boardMemberPaperHost"></div>
@@ -891,6 +924,7 @@
       <div class="doc-toolbar">
         <span class="t">📨 이사회 개최 통보 공문 · A4 세로</span>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('boardNoticeHost','이사회_개최통보')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
         <li>시행번호·접수·주소·전화·전송 등 기관 정보는 아래 문서를 직접 눌러 채워 넣으세요.</li>
@@ -902,6 +936,7 @@
       <div class="doc-toolbar">
         <span class="t">📑 이사회 회의록 표지 · A4 세로</span>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('boardCoverHost','이사회_회의록표지')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
         <li>회차·일자는 '회의 입력'에서 가져와요. 아래 문서를 직접 눌러 고칠 수도 있어요.</li>
@@ -914,6 +949,7 @@
         <span class="t">📋 이사회 참석자명부(방명록) · A4 세로</span>
         <label><input type="checkbox" id="bdAnonRoster" onchange="toggleBoardAnon(this.checked)"> 🔒 홈페이지 공개용(이름 익명화)</label>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('boardRosterHost','이사회_참석자명부')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
         <li>이사회 명단 전원이 나와요. 실제 참석한 분만 서명란에 자필로 서명하면 돼요.</li>
@@ -926,6 +962,7 @@
         <span class="t">📝 이사회 회의록 · A4 세로</span>
         <label><input type="checkbox" id="bdAnonMinutes" onchange="toggleBoardAnon(this.checked)"> 🔒 홈페이지 공개용(이름 익명화)</label>
         <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="saveHwpx('boardMinutesHost','이사회_회의록')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
         <li>지침 [서식13] 양식이에요. 서명란·본문은 아래 문서를 직접 눌러 고칠 수 있어요.</li>
@@ -984,7 +1021,7 @@ function stdSeip(){return[
   {name:"사업수입",hangs:[]},
   {name:"투자수입",hangs:[{name:"투자수입",moks:[stdMok("배당금","출자증권 배당금 =2,000,000원")]}]},
   {name:"전년도수입",hangs:[]},
-  {name:"이월금",hangs:[{name:"전년도이월금",moks:[stdMok("전년도이월금","전년도이월금 =15,000,000원")]}]},
+  {name:"이월금",hangs:[{name:"전년도이월금",moks:[stdMok("전년도잉여금","전년도 집행잔액(순세계잉여금) =15,000,000원"),stdMok("이월사업비","○○시설공사 이월사업비 =5,000,000원")]}]},
   {name:"기부원조금",hangs:[{name:"기부원조금",moks:[stdMok("기부금","발전기금 기부금 =5,000,000원")]}]},
   {name:"차입금",hangs:[]},
   {name:"잡수입",hangs:[
@@ -996,11 +1033,11 @@ function stdSechul(){return[
   {name:"이사회비",hangs:[{name:"이사회비",moks:[
     stdMok("임원수당","100,000원×5명×4회"),
     stdMok("회의비","50,000원×10명×2회"),
-    stdMok("업무추진비","300,000원×12월"),
+    stdMok("업무추진비","경조사비 50,000원×3회"),   // 지침: "이사장 판공비" 등 총액계상 불가 → 산출내역별로
   ]}]},
   {name:"사무비",hangs:[{name:"수용비",moks:[
     stdMok("공공요금","100,000원×12월"),
-    stdMok("수수료·수선비","등기수수료 등 =200,000원"),
+    stdMok("수수료수선비","등기수수료 등 =200,000원"),
   ]}]},
   {name:"재산조성비",hangs:[
     {name:"재산관리비",moks:[stdMok("재산유지비","건물 유지보수비 =3,000,000원"),stdMok("공과보험료","화재보험료 =800,000원")]},
@@ -1018,8 +1055,64 @@ function stdSechul(){return[
   {name:"예비비",hangs:[{name:"예비비",moks:[stdMok("예비비","예비비 =1,000,000원")]}]},
 ]}
 
-let seip=(__savedState&&__savedState.seip)?__savedState.seip:stdSeip();
-let sechul=(__savedState&&__savedState.sechul)?__savedState.sechul:stdSechul();
+/* ===== 지침 [별지 제2호] 표준 예산과목 번호표 — 예산서·총괄표의 관·항·목 번호는 입력 순서가 아니라 이 번호를 따름 ===== */
+const STD_CODES={
+  seip:[
+    ["재산수입",[["기본재산수입",["대지료","대가료","임야수입","예금이자수입","법인세환급금(법인분)","기타수입"]],["재산매각수입",["토지매각수입","건물매각수입","임야매각수입","기타재산매각수입"]]]],
+    ["사업수입",[["사업수입",[]]]],
+    ["투자수입",[["투자수입",["배당금","국채상환금","국채이자수입","기타증권수입"]]]],
+    ["전년도수입",[["전년도수입",["기본재산수입","불용재산매각수입","사업수입","투자수입"]]]],
+    ["이월금",[["전년도이월금",["전년도잉여금","이월사업비"]]]],
+    ["기부원조금",[["기부원조금",["기부금","원조금","보조금"]]]],
+    ["차입금",[["차입금",["은행차입","개인차입"]]]],
+    ["잡수입",[["물품매각수입",["불용물품매각수입"]],["예금이자",["정기예금이자","기타예금이자"]],["잡수입",["잡수입","법인세환급금(학교분)"]]]],
+  ],
+  sechul:[
+    ["이사회비",[["이사회비",["임원수당","회의비","업무추진비","여비"]]]],
+    ["사무비",[["수용비",["공공요금","연료비","차량비","선박비","비품기계류비","수수료수선비","수용재료비","인쇄비","운송비"]]]],
+    ["재산조성비",[["시설비",["재산매입비","시설비","기타시설비"]],["재산관리비",["재산유지비","공과보험료"]]]],
+    ["전출금",[["전출금",["연금부담금","재해보상부담금","건강보험부담금","학교운영비","시설비","법인세환급금(학교분)","교육청대응투자비","기타전출금"]]]],
+    ["투자비",[["투자비",["주식매입비","국채매입비","기타투자비"]]]],
+    ["전년도지출",[["전년도지출",["전년도지출"]]]],
+    ["상환금",[["부채상환금",["원금상환금","이자지출금"]]]],
+    ["수혜금",[["장학금",["장학금"]]]],
+    ["잡지출",[["제지출",["보상금","사례금","소송비","기타제지출"]]]],
+    ["예비비",[["예비비",["예비비"]]]],
+  ]};
+/* 이름 비교용 정규화: 공백·가운뎃점 무시 + 지침 안에서도 표기가 갈리는 목 이름 통일 */
+const MOK_ALIAS={"법인환급금(학교분)":"법인세환급금(학교분)","법인세환급금(법인)":"법인세환급금(법인분)"};
+function normName(s){return String(s||'').replace(/[\s·・ㆍ.]/g,'');}
+function normMok(s){const n=normName(s);return MOK_ALIAS[n]||n;}
+/* 목 이름 비교(옛 저장본의 이월금>전년도이월금>'전년도이월금' 목 = 지침의 '전년도잉여금') */
+function sameMok(hangName,a,b){
+  const f=x=>{const n=normMok(x);return(normName(hangName)==='전년도이월금'&&n==='전년도이월금')?'전년도잉여금':n;};
+  return f(a)===f(b);
+}
+/* 형제 목록(names)에 표준 번호를 매김. 표준에 없는(증설한) 과목은 표준 마지막 번호 뒤로 이어서 번호 부여 */
+function stdNumbers(names,stdList,matcher){
+  const eq=matcher||((a,b)=>normName(a)===normName(b));
+  let next=stdList.length;const used=new Set();
+  return names.map(nm=>{
+    const i=stdList.findIndex(s=>eq(nm,s));
+    if(i>=0&&!used.has(i)){used.add(i);return i+1;}
+    return ++next;
+  });
+}
+function stdGwanList(which){return STD_CODES[which].map(x=>x[0]);}
+function stdHangList(which,gn){const g=STD_CODES[which].find(x=>normName(x[0])===normName(gn));return g?g[1].map(x=>x[0]):[];}
+function stdMokList(which,gn,hn){const g=STD_CODES[which].find(x=>normName(x[0])===normName(gn));if(!g)return[];const h=g[1].find(x=>normName(x[0])===normName(hn));return h?h[1]:[];}
+/* 옛 자동저장본 과목명을 지침 표기로 정리(금액·산출기초는 그대로) */
+function migrateTree(tree){
+  (tree||[]).forEach(g=>(g.hangs||[]).forEach(h=>(h.moks||[]).forEach(m=>{
+    if(normName(g.name)==='이월금'&&normName(h.name)==='전년도이월금'&&normName(m.name)==='전년도이월금')m.name='전년도잉여금';
+    if(normName(m.name)==='수수료수선비')m.name='수수료수선비';
+    if(normName(m.name)==='업무추진비'&&m.demo==='300,000원×12월')m.demo='경조사비 50,000원×3회';
+  })));
+  return tree;
+}
+
+let seip=(__savedState&&__savedState.seip)?migrateTree(__savedState.seip):stdSeip();
+let sechul=(__savedState&&__savedState.sechul)?migrateTree(__savedState.sechul):stdSechul();
 let prevData=null;
 
 const won=n=>(isNaN(n)?0:Math.round(n)).toLocaleString('ko-KR');
@@ -1540,10 +1633,20 @@ wireDropZone('thisBudgetDrop','loadThisBudget');
 /* ===== 미리보기 ===== */
 const numB=n=>n?won(n):"";
 function diffMark(d){if(d===0)return"";return d<0?"△"+won(Math.abs(d)):won(d);}
-function findPrevMok(prev,gn,hn,mn){if(!prev)return null;const g=prev.find(x=>x.name===gn);if(!g)return null;const h=g.hangs.find(x=>x.name===hn);if(!h)return null;const m=h.moks.find(x=>x.name===mn);return m?(m.amt||0):null;}
-function prevGwanSum(prev,gn){if(!prev)return 0;const g=prev.find(x=>x.name===gn);return g?gwanSum(g):0;}
-function prevHangSum(prev,gn,hn){if(!prev)return 0;const g=prev.find(x=>x.name===gn);if(!g)return 0;const h=g.hangs.find(x=>x.name===hn);return h?h.moks.reduce((s,m)=>s+(m.amt||0),0):0;}
-function prevHangSum(prev,gn,hn){if(!prev)return 0;const g=prev.find(x=>x.name===gn);if(!g)return 0;const h=g.hangs.find(x=>x.name===hn);return h?h.moks.reduce((x,m)=>x+(m.amt||0),0):0;}
+/* 전(직전) 예산 찾기 — 이름은 공백·가운뎃점·옛 표기 차이를 무시하고 비교(예: '수수료·수선비'='수수료수선비', 옛 '전년도이월금' 목='전년도잉여금') */
+function prevGwanNode(prev,gn){return prev?prev.find(x=>normName(x.name)===normName(gn))||null:null;}
+function prevHangNode(prev,gn,hn){const g=prevGwanNode(prev,gn);return g?(g.hangs||[]).find(x=>normName(x.name)===normName(hn))||null:null;}
+function prevMokNode(prev,gn,hn,mn){const h=prevHangNode(prev,gn,hn);return h?(h.moks||[]).find(x=>sameMok(hn,x.name,mn))||null:null;}
+function findPrevMok(prev,gn,hn,mn){const m=prevMokNode(prev,gn,hn,mn);return m?(m.amt||0):null;}
+function prevGwanSum(prev,gn){const g=prevGwanNode(prev,gn);return g?gwanSum(g):0;}
+function prevHangSum(prev,gn,hn){const h=prevHangNode(prev,gn,hn);return h?h.moks.reduce((x,m)=>x+(m.amt||0),0):0;}
+/* ===== 지침 Ⅴ-3 금액단위: 예산서는 천원 — 세입은 천원 미만 절사, 세출은 천원 미만 절상 =====
+   목 금액을 먼저 천원으로 바꾼 뒤 그 값을 더해서 항·관·합계를 만듦 → 인쇄물의 목 합=항, 항 합=관, 관 합=합계가 항상 맞음(계수 불일치 방지) */
+function k1(n,which){n=n||0;const v=Math.abs(n)/1000;const r=which==='sechul'?Math.ceil(v-1e-9):Math.floor(v+1e-9);return n<0?-r:r;}
+function hangK(h,which){return h?(h.moks||[]).reduce((s,m)=>s+k1(m.amt,which),0):0;}
+function gwanK(g,which){return g?(g.hangs||[]).reduce((s,h)=>s+hangK(h,which),0):0;}
+function totalK(data,which){return(data||[]).reduce((s,g)=>s+gwanK(g,which),0);}
+const numK=n=>n?won(n):"";
 function docKindTitle(kind){const yr=document.getElementById('fiscalYear').value||'';const round=document.getElementById('suppRound').value||'1';
   if(kind==='budget')return`${yr}학년도 법인회계 예산`;
   if(kind==='supp')return`${yr}학년도 제${round}회 법인회계 추가경정예산`;
@@ -1576,12 +1679,14 @@ function buildCover(kind,total){
   if(kind!=='settle')return `<div class="paper cover">
     <h3 class="doc-title" contenteditable>${esc(l1)}<br><br>${esc(title2)}</h3>
     <div class="cover-box">
-      <div class="row"><div class="k">세　입</div><div class="v" contenteditable>일금 : ${won1k(total.se)} 천원</div></div>
-      <div class="row"><div class="k">세　출</div><div class="v" contenteditable>일금 : ${won1k(total.sc)} 천원</div></div>
+      <div class="row"><div class="k">세　입</div><div class="v" contenteditable>일금 : ${won(totalK(seip,'seip'))} 천원</div></div>
+      <div class="row"><div class="k">세　출</div><div class="v" contenteditable>일금 : ${won(totalK(sechul,'sechul'))} 천원</div></div>
     </div>
     <div class="cover-org" contenteditable>${esc(corp)}<br>(설치경영학교 : ${esc(school)})</div>
   </div>`;
   // 결산서 표지 — 지침 [서식14]: 세입/세출/세입·세출 차인 금액(원) + 차인잔액 세부내역(순세계잉여금·다음연도이월액)
+  // 다음연도이월액 = 부속서식 명시이월(서식23, 천원 단위 입력) + 사고이월(서식24, 원 단위) 이월액 합계, 순세계잉여금 = 차인금액 − 다음연도이월액
+  const carry=nextYearCarry();
   return `<div class="paper cover">
     <h3 class="doc-title" contenteditable>${esc(yr)}회계연도<br><br>법인회계 세입·세출 결산서</h3>
     <div class="cover-box" style="margin-bottom:10mm">
@@ -1591,12 +1696,17 @@ function buildCover(kind,total){
     </div>
     <div contenteditable style="width:75%;margin:0 auto 20mm;line-height:2">
       &lt;차인잔액 세부내역&gt;<br>
-      ○ 순세계잉여금 : 금 ${won(diff)} 원<br>
-      ○ 다음연도이월액 : 금 　　　　 원<br>
+      ○ 순세계잉여금 : 금 ${won(diff-carry)} 원<br>
+      ○ 다음연도이월액 : 금 ${carry?won(carry):'　　　　'} 원<br>
       <span style="font-size:9.5pt">※ 이월사업비 조서 필수 제출</span>
     </div>
     <div class="cover-org" contenteditable>${esc(corp)}<br>(설치경영학교 : ${esc(school)})</div>
   </div>`;
+}
+function nextYearCarry(){
+  if(typeof formsState==='undefined')return 0;
+  const colSum=(id,ci)=>{const st=formsState[id];return st?st.rows.reduce((s,r)=>s+parseNum(r[ci]||0),0):0;};
+  return Math.round(colSum('f23',7)*1000+colSum('f24',8));
 }
 function buildChong(kind,total){
   const yr=document.getElementById('fiscalYear').value||'';
@@ -1638,28 +1748,35 @@ function buildYesanseo(which,kind){
   const data=which==='seip'?seip:sechul;const prev=prevData?(which==='seip'?prevData.seip:prevData.sechul):null;
   // 숨김: 추경은 '증감 0'(변동없음), 본예산은 '금액 0', 결산은 결산액·최종예산액 모두 0. 토글 켜지면 모두 표시
   const hide=(a,b)=>!showZero&&(kind==='supp'?(prev&&a===b):settle?(a===0&&b===0):a===0);
+  // 결산: 원 단위 그대로 / 예산: 지침 Ⅴ-3에 따라 천원(세입 절사·세출 절상) — ka,kb는 k1()로 환산해 아래에서부터 더한 천원 값
   const amtCells=settle
     ?(a,b)=>`<td class="r" contenteditable>${numB(a)}</td><td class="r" contenteditable>${numB(b)}</td><td class="r" style="white-space:nowrap">${diffMark(b-a)}</td>`
-    :(a,b)=>`<td class="r" contenteditable>${numB1k(a)}</td><td class="r" contenteditable>${numB1k(b)}</td><td class="r" style="white-space:nowrap">${diffMark(Math.round(a/1000)-Math.round(b/1000))}</td>`;
+    :(a,b,ka,kb)=>`<td class="r" contenteditable>${numK(ka)}</td><td class="r" contenteditable>${numK(kb)}</td><td class="r" style="white-space:nowrap">${diffMark(ka-kb)}</td>`;
+  // 번호: 지침 [별지 제2호] 표준 과목 번호(입력 순서·숨긴 과목과 무관), 표준에 없는 증설 과목은 표준 번호 뒤로 이어짐
+  const gNums=stdNumbers(data.map(g=>g.name),stdGwanList(which));
   let body='';
   data.forEach((g,gi)=>{
     const gA=gwanSum(g),gB=prevGwanSum(prev,g.name);
     if(hide(gA,gB))return;
+    const gKA=gwanK(g,which),gKB=gwanK(prevGwanNode(prev,g.name),which);
+    const hNums=stdNumbers(g.hangs.map(h=>h.name),stdHangList(which,g.name));
     let gRows='';
     g.hangs.forEach((h,hi)=>{
       const hA=h.moks.reduce((x,m)=>x+(m.amt||0),0),hB=prevHangSum(prev,g.name,h.name);
       if(hide(hA,hB))return;
+      const hKA=hangK(h,which),hKB=hangK(prevHangNode(prev,g.name,h.name),which);
+      const mNums=stdNumbers(h.moks.map(m=>m.name),stdMokList(which,g.name,h.name),(a,b)=>sameMok(h.name,a,b));
       let hRows='';
       h.moks.forEach((m,mi)=>{
         const mp=findPrevMok(prev,g.name,h.name,m.name);const mA=m.amt||0,mB=mp==null?0:mp;
         if(hide(mA,mB))return;
-        hRows+=`<tr><td></td><td></td><td class="l">${mi+1}. ${esc(m.name)}</td>${amtCells(mA,mB)}<td class="sanchul" contenteditable>${fmtSanchul(m.calc)}</td></tr>`;
+        hRows+=`<tr><td></td><td></td><td class="l">${mNums[mi]}. ${esc(m.name)}</td>${amtCells(mA,mB,k1(mA,which),k1(mB,which))}<td class="sanchul" contenteditable>${fmtSanchul(m.calc)}</td></tr>`;
       });
       if(!hRows)return;
-      gRows+=`<tr><td></td><td class="l" colspan="2">${hi+1}. ${esc(h.name)}</td>${amtCells(hA,hB)}<td></td></tr>`+hRows;
+      gRows+=`<tr><td></td><td class="l" colspan="2">${hNums[hi]}. ${esc(h.name)}</td>${amtCells(hA,hB,hKA,hKB)}<td></td></tr>`+hRows;
     });
     if(!gRows)return;
-    body+=`<tr style="font-weight:700"><td class="l" colspan="3">${gi+1}. ${esc(g.name)}</td>${amtCells(gA,gB)}<td></td></tr>`+gRows;
+    body+=`<tr style="font-weight:700"><td class="l" colspan="3">${gNums[gi]}. ${esc(g.name)}</td>${amtCells(gA,gB,gKA,gKB)}<td></td></tr>`+gRows;
   });
   const label=which==='seip'?'세　입':'세　출';
   if(!body&&kind!=='supp')return'';
@@ -1674,7 +1791,7 @@ function buildYesanseo(which,kind){
     :'<col style="width:3%"><col style="width:3%"><col style="width:17%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:48%">';
   const totCells=settle
     ?`<td class="r">${won(tA)}</td><td class="r">${numB(tB)}</td><td class="r" style="white-space:nowrap">${diffMark(tB-tA)}</td>`
-    :`<td class="r">${won1k(tA)}</td><td class="r">${numB1k(tB)}</td><td class="r" style="white-space:nowrap">${diffMark(Math.round(tA/1000)-Math.round(tB/1000))}</td>`;
+    :(()=>{const ka=totalK(data,which),kb=totalK(prev,which);return`<td class="r">${won(ka)}</td><td class="r">${numK(kb)}</td><td class="r" style="white-space:nowrap">${diffMark(ka-kb)}</td>`;})();
   return `<div class="paper pagebreak">
     ${which==='seip'?`<div class="sheet-title" contenteditable>${docTitle}</div>`:''}
     <table class="doc numfit${settle?' won':''}">
@@ -1982,12 +2099,79 @@ function calcCheck(){
   const box=document.getElementById('chkBox'),msg=document.getElementById('chkMsg');box.classList.remove('ok','no');
   if(legal===0){msg.className='balance-msg';return;}
   if(gap<=0){box.classList.add('ok');msg.className='balance-msg ok';msg.textContent='✔ 법정부담경비를 전액 전출했습니다. 다른 목적의 전출금 편성이 가능합니다.';}
-  else{box.classList.add('no');msg.className='balance-msg no';msg.textContent=`✖ 법정부담경비 전출이 ${won(gap)}원 부족합니다. 부족 시 투자비·상환금 등 다른 목적의 전출금을 편성할 수 없습니다.`;}
+  else{box.classList.add('no');msg.className='balance-msg no';msg.textContent=`✖ 법정부담경비 전출이 ${won(gap)}원 부족합니다. 부족 시 전출금 중 학교운영비·시설비·교육청대응투자비·기타전출금(다른 목적의 목)을 편성할 수 없습니다.`;}
 }
 
 renderLegal();
 renderRate();
 renderTransfer();
+
+/* --- ④ 의무전출액 계산 (지침 Ⅱ-5·6, 설립·운영 규정 시행규칙 제10조) --- */
+/* 예산 트리에서 관/항/목 이름으로 금액 합산(이름은 normName 비교). hn·mn 생략 시 상위 전체 */
+function budgetSum(tree,gn,hn,mn){
+  const g=(tree||[]).find(x=>normName(x.name)===normName(gn));if(!g)return 0;
+  return g.hangs.filter(h=>!hn||normName(h.name)===normName(hn))
+    .reduce((s,h)=>s+h.moks.filter(m=>!mn||normMok(m.name)===normMok(mn)).reduce((x,m)=>x+(m.amt||0),0),0);
+}
+function fillDutyFromBudget(){
+  const S=seip,C=sechul,set=(id,v)=>{document.getElementById(id).value=v?won(v):'';};
+  // 총수입: 기본재산수입(재산매각 제외)+사업+투자+전년도수입+전년도잉여금(이월사업비 제외)+물품매각+예금이자+잡수입(학교분 법인세환급금 제외)
+  const A=budgetSum(S,'재산수입','기본재산수입')+budgetSum(S,'사업수입')+budgetSum(S,'투자수입')+budgetSum(S,'전년도수입')
+    +budgetSum(S,'이월금','전년도이월금','전년도잉여금')+budgetSum(S,'이월금','전년도이월금','전년도이월금')
+    +budgetSum(S,'잡수입','물품매각수입')+budgetSum(S,'잡수입','예금이자')
+    +budgetSum(S,'잡수입','잡수입')-budgetSum(S,'잡수입','잡수입','법인세환급금(학교분)');
+  set('dtA',A);
+  set('dtB',budgetSum(C,'재산조성비','재산관리비','공과보험료'));
+  set('dtOp',budgetSum(C,'이사회비')+budgetSum(C,'사무비')+budgetSum(C,'잡지출'));
+  set('dtRev',0);   // 수익비용은 관할청 사전승인 건만 인정 → 자동으로 넣지 않음
+  set('dtNeed',legalTotal());
+  set('dtD',budgetSum(C,'전출금','전출금','연금부담금')+budgetSum(C,'전출금','전출금','재해보상부담금')+budgetSum(C,'전출금','전출금','건강보험부담금'));
+  set('dtF',budgetSum(C,'전출금','전출금','학교운영비'));
+  set('dtEtc',budgetSum(C,'전출금','전출금','시설비')+budgetSum(C,'전출금','전출금','교육청대응투자비')+budgetSum(C,'전출금','전출금','기타전출금'));
+  calcDuty();
+}
+function calcDuty(){
+  const v=id=>parseNum(document.getElementById(id).value);
+  const A=v('dtA'),B=v('dtB'),op=v('dtOp'),rev=v('dtRev'),need=v('dtNeed'),D=v('dtD'),F=v('dtF'),etc=v('dtEtc');
+  const res=document.getElementById('dutyResult'),msg=document.getElementById('dutyMsg');
+  if(!A){res.innerHTML='';msg.className='balance-msg';msg.textContent='';return;}
+  const base=A-B;
+  // 법정부담경비 전액 전출 가능 여부: 운영비용 40% 한도까지 인정해도 법정부담경비 소요액을 낼 수 있는지로 판단
+  const canFull=need>0?(base-Math.min(op,base*0.4)-rev)>=need:true;
+  const rate=canFull?0.4:0.2;
+  const limit=Math.max(base*rate,0);
+  const opOk=op<limit;                     // 지침: 한도 "미만"
+  const opRecog=Math.min(op,limit);         // 한도 넘는 부분은 운영비용으로 인정 안 됨
+  const Cc=opRecog+rev;
+  const rows=[];const row=(k,val,note)=>rows.push(`<tr><td style="width:46%">${k}</td><td class="r" style="width:22%;font-weight:600">${won(val)}</td><td style="font-size:12.5px;color:var(--sub)">${note||''}</td></tr>`);
+  row('제세공과금 공제 후 (A−B)',base,'');
+  row(`운영비용 편성한도 (A−B)×${canFull?'40':'20'}% 미만`,limit,canFull?'법정부담경비 전액 전출 가능 법인':'법정부담경비 전액 전출 불가 법인');
+  row('학교법인운영필요경비 인정액 (C)',Cc,'운영비용(한도 내)+수익비용');
+  let E,actual,label,warn=[];
+  if(canFull){
+    E=Math.max((A-B-Cc-D)*0.8,0);actual=F;label='학교운영경비';
+    row('법정부담경비 전출액 (D)',D,need&&D<need?'⚠ 소요액보다 적음':'');
+    row('학교운영경비 의무전출액 (E)=(A−B−C−D)×80% 이상',E,'');
+    row('학교운영비 실제 전출액 (F)',F,'');
+    if(need&&D<need)warn.push(`법정부담경비 전출액이 소요액보다 ${won(need-D)}원 적어요. 법정부담경비를 최우선으로 전출해야 해요.`);
+  }else{
+    E=Math.max(A-B-Cc,0);actual=D;label='법정부담경비';
+    row('법정부담경비 의무전출액 (E)=A−B−C',E,'잔액 전부를 법정부담경비로');
+    row('법정부담경비 실제 전출액 (F)',D,'');
+    if(F+etc>0)warn.push(`의무전출액을 다 부담하지 못하는 법인은 다른 목적(학교운영비·시설비·교육청대응투자비·기타전출금)의 전출금을 편성할 수 없어요. 지금 ${won(F+etc)}원이 편성돼 있어요. (목적지정 기부금 재원이면 예외)`);
+  }
+  const G=Math.ceil(E)-actual;
+  row('전출 부족액 (G)=E−F',Math.max(G,0),'');
+  if(!opOk&&op>0)warn.push(`운영비용 편성액 ${won(op)}원이 한도(${won(Math.floor(limit))}원 미만)를 넘어요. 넘는 부분은 운영비용으로 인정되지 않아요.`);
+  res.innerHTML=rows.join('');
+  if(G>0){msg.className='balance-msg no';msg.textContent=`✖ ${label} 의무전출액보다 ${won(G)}원 부족해요. 부족하면 재정결함보조금 감액, 교육환경개선사업 후순위 선정 대상이에요.`+(warn.length?' / '+warn.join(' / '):'');}
+  else if(warn.length){msg.className='balance-msg no';msg.textContent='⚠ '+warn.join(' / ');}
+  else{msg.className='balance-msg ok';msg.textContent=`✔ ${label} 의무전출액을 충족해요.`;}
+}
+document.querySelectorAll('#dutyInputs input').forEach(inp=>{
+  inp.addEventListener('input',calcDuty);
+  inp.addEventListener('blur',e=>{const n=parseNum(e.target.value);e.target.value=n?won(n):'';});
+});
 
 /* ================= 부속서식 탭 ================= */
 /* 각 서식: id, 제목, 안내, 열(cols), 하단합계여부(sum: 합계낼 열 인덱스 배열) */
@@ -2018,23 +2202,39 @@ const FORMS=[
    cols:['관','항','목','사업명','예산현액①','지출액②','지출잔액③','이월액④','불용액(①-②-④)','사유'], sum:[4,5,6,7,8]},
   {id:'f24', title:'사고이월 명세서', note:'금액단위: 원 · 이월액 합계는 결산서 표지 잔액+세입결산 비교증감액과 일치',
    cols:['관','항','목','사업명','예산현액①','지출원인행위액②','지출액③','지출잔액(②-③)','이월액④','불용액(①-③-④)','사유'], sum:[4,5,6,7,8,9]},
-  {id:'f25', title:'직원 인건비 지급 명세서', note:'작성기준: 매년 3월 1일자 · 단위: 원 · 구분=법인일반회계/수익사업회계 · 연간 지급액을 종류별로 기재, 수당란은 증설 가능',
+  {id:'f25', title:'직원 인건비 지급 명세서', note:'단위: 원 · 구분=법인일반회계/수익사업회계 · 연간 지급액을 종류별로 기재, 수당란은 증설 가능',
    cols:['구분','직','성명','호봉','봉급','기타수당','계'], sum:[4,5,6]},
   {id:'f27', title:'예금잔액 증명서', note:'단위: 원 · 잔액지정일자: 회계 마감일 · 금융기관 발행 잔액증명서 첨부',
    cols:['예금종류','예치기관','계좌번호','잔액지정일자','잔액','비고'], sum:[4]},
   {id:'f28', title:'예금잔액 불부합 명세서', note:'단위: 원 · 결산잔액과 금융기관 잔액이 다른 법인(학교)만 제출 · 잔액증명서 첨부, 이사장·법인과장 직인·사인 필요',
    cols:['결산잔액(1)','금융기관잔액(2)','차액(1)-(2)','사유','비고'], sum:[0,1,2]},
 ];
-/* 수익용기본재산 수입예정/실적조서(5·17)는 표가 복합적이라 별도 간이표로 제공 */
+/* 수익용기본재산 수입예정/실적조서(5·17)는 지침 원문이 1.총괄 / 2.세부내역(토지·건물, 현금·유가증권) / 3.수익사업체
+   여러 표로 이뤄져 있어서 표마다 카드를 나눔(같은 서식번호라 예산/결산 그룹 분류는 그대로). 기존 f5·f17(토지·건물)은 id 유지 → 옛 엑셀 템플릿 호환 */
 FORMS.push(
-  {id:'f5', title:'수익용기본재산 수입예정조서 (세부내역)', note:'단위: 천원 · 수익유무 막론하고 모든 수익용기본재산 기재 · 계약서 사본 제출',
+  {id:'f5a', title:'수익용기본재산 수입예정조서 — 1. 총괄', note:'단위: 천원 · 당해연도 수입예정액과 전년도 수입액 비교',
+   cols:['구분','토지','건물','현금','기타','계'], sum:[1,2,3,4,5], noTotal:true, init:[['당해연도 수입예정액'],['전년도 수입액'],['증(△)감']]},
+  {id:'f5', title:'수익용기본재산 수입예정조서 — 2. 세부내역(가·나. 토지·건물)', note:'단위: 천원 · 수익유무 막론하고 모든 수익용기본재산 기재 · 수익이 발생하는 재산은 계약서 사본 제출',
    cols:['종류','소재지','경작/사용방법','지적·연건평(㎡)','평가액','수익액','수익률'], sum:[4,5]},
-  {id:'f17', title:'수익용기본재산 수입실적조서 (세부내역)', note:'단위: 원 · 임차인·임대기간 포함 기재',
+  {id:'f5c', title:'수익용기본재산 수입예정조서 — 2. 세부내역(다. 현금 및 유가증권)', note:'단위: 천원 · 통장 사본 제출',
+   cols:['재산 종류','예치기간','금액','이율 또는 배당금','총수입액','예치기관','비고'], sum:[2,4]},
+  {id:'f5d', title:'수익용기본재산 수입예정조서 — 3. 수익사업체', note:'단위: 천원 · 증빙서류 제출',
+   cols:['사업체','총수익','제경비','순이익','수익전출금','비고'], sum:[1,2,3,4]},
+  {id:'f17a', title:'수익용기본재산 수입실적조서 — 1. 총괄', note:'단위: 천원 · 해당년도 수입액과 전년도 수입액 비교',
+   cols:['구분','토지','건물','현금','기타','계'], sum:[1,2,3,4,5], noTotal:true, init:[['해당년도 수입액'],['전년도 수입액'],['증(△)감']]},
+  {id:'f17', title:'수익용기본재산 수입실적조서 — 2. 세부내역(가·나. 토지·건물)', note:'단위: 원 · 임차인·임대기간 포함 기재 · 수익액은 회계연도 내의 수입만 · 계약서 사본 제출',
    cols:['종류','소재지','경작/사용방법','지적·연건평(㎡)','평가액','임차인','임대기간','수익액','수익률'], sum:[4,7]},
+  {id:'f17c', title:'수익용기본재산 수입실적조서 — 2. 세부내역(다. 현금 및 유가증권)', note:'단위: 원 · 통장 사본 제출',
+   cols:['재산 종류','예치기관','예치기간','계좌번호','예치금액','이율 또는 배당금','총수입액','비고'], sum:[4,6]},
+  {id:'f17d', title:'수익용기본재산 수입실적조서 — 3. 수익사업체', note:'단위: 원 · 증빙서류 제출',
+   cols:['사업체명','사업체 주소','총수익','제경비','순이익','수익전출금','비고'], sum:[2,3,4,5]},
 );
+/* 서식번호 순으로 정렬(같은 번호끼리는 위 순서 유지) → 카드·엑셀 시트가 지침 서식 순서대로 나옴 */
+FORMS.sort((a,b)=>parseInt(a.id.slice(1),10)-parseInt(b.id.slice(1),10));
 
 let formsState={};  // {id:{on:bool, rows:[[...]]}}
-FORMS.forEach(f=>{formsState[f.id]={on:false, rows:[Array(f.cols.length).fill('')]};});
+const blankFormRows=f=>f.init?f.init.map(r=>f.cols.map((c,ci)=>r[ci]||'')):[Array(f.cols.length).fill('')];
+FORMS.forEach(f=>{formsState[f.id]={on:false, rows:blankFormRows(f)};});
 
 /* 지침 원문의 서식 번호 체계: 1~12번은 예산 관련 서식, 13번 이후는 결산 관련 서식 */
 function isBudgetForm(id){return parseInt(id.slice(1),10)<=12;}
@@ -2064,7 +2264,7 @@ function renderFormCard(host,f){
       +`<td class="del"><button class="del-btn" onclick="delFormRow('${f.id}',${ri})">×</button></td></tr>`;
     });
     let footHtml='';
-    if(f.sum.length){
+    if(f.sum.length&&!f.noTotal){
       footHtml='<tr class="gwan">'+f.cols.map((c,ci)=>{
         if(ci===0)return '<td>합계</td>';
         if(f.sum.includes(ci)){const s=st.rows.reduce((a,r)=>a+parseNum(r[ci]),0);return `<td class="r" data-sumcol="${ci}">${won(s)}</td>`;}
@@ -2109,7 +2309,7 @@ function bindForms(){
 function toggleForm(id,on){formsState[id].on=on;renderFormsList();}
 function toggleAllForms(on){FORMS.forEach(f=>formsState[f.id].on=on);renderFormsList();}
 function addFormRow(id){const f=FORMS.find(x=>x.id===id);formsState[id].rows.push(Array(f.cols.length).fill(''));renderFormsList();}
-function delFormRow(id,ri){formsState[id].rows.splice(ri,1);const f=FORMS.find(x=>x.id===id);if(formsState[id].rows.length===0)formsState[id].rows.push(Array(f.cols.length).fill(''));renderFormsList();}
+function delFormRow(id,ri){formsState[id].rows.splice(ri,1);const f=FORMS.find(x=>x.id===id);if(formsState[id].rows.length===0)formsState[id].rows=blankFormRows(f);renderFormsList();}
 
 function openFormsPreview(){
   const yr=document.getElementById('fiscalYear').value||'';
@@ -2127,7 +2327,7 @@ function openFormsPreview(){
       }).join('')+'</tr>';
     });
     let footHtml='';
-    if(f.sum.length){
+    if(f.sum.length&&!f.noTotal){
       footHtml='<tr class="tot">'+f.cols.map((c,ci)=>{
         if(ci===0)return '<td>합계</td>';
         if(f.sum.includes(ci)){const s=st.rows.reduce((a,r)=>a+parseNum(r[ci]),0);return `<td class="r">${won(s)}</td>`;}
@@ -2155,7 +2355,7 @@ function closeFormsPreview(){document.getElementById('formsPreviewArea').classLi
 
 /* 서식 엑셀 시트명: 서식번호 + 짧은약칭 (엑셀 31자 제한 대응) */
 function formSheetName(f){
-  const shortMap={f5:'수입예정조서',f6:'기구정원',f7:'부채명세서',f8:'직원명단',f9:'직원보수',f10:'미수액조서',f12:'이월사업비',f17:'수입실적조서',f18:'결손처분',f19:'미수입액',f20:'차입금',f21:'예비비사용',f22:'이전용',f23:'명시이월',f24:'사고이월',f25:'인건비지급',f27:'예금잔액',f28:'예금불부합'};
+  const shortMap={f5:'수입예정조서',f6:'기구정원',f7:'부채명세서',f8:'직원명단',f9:'직원보수',f10:'미수액조서',f12:'이월사업비',f17:'수입실적조서',f5a:'수입예정_총괄',f5c:'수입예정_현금증권',f5d:'수입예정_수익사업체',f17a:'수입실적_총괄',f17c:'수입실적_현금증권',f17d:'수입실적_수익사업체',f18:'결손처분',f19:'미수입액',f20:'차입금',f21:'예비비사용',f22:'이전용',f23:'명시이월',f24:'사고이월',f25:'인건비지급',f27:'예금잔액',f28:'예금불부합'};
   const num=f.id.replace('f','');
   let nm=num+'_'+(shortMap[f.id]||f.id);
   return nm.length>31?nm.slice(0,31):nm;
@@ -3137,8 +3337,6 @@ renderBoardMeetings();
    세출 10관(이사회비/사무비/재산조성비/전출금/투자비/전년도지출/상환금/수혜금/잡지출/예비비) —
    '본예산·추경·결산' 탭의 seip/sechul 트리 관(gwan) 이름과 1:1로 대응되어 그대로 재사용(별도 매칭 로직 불필요). */
 function csKindLabel(k){return k==='budget'?'본예산서':(k==='supp'?'추가경정예산서':'결산서');}
-function won1k(n){return won((n||0)/1000);}
-function numB1k(n){return n?won1k(n):"";}
 /* 지침 [서식3]/[서식15] 공식서식 그대로의 법인총괄표 HTML을 만들어서 문자열로 반환(DOM에 직접 쓰지 않음) — openPreview()에서 '법인총괄표' 체크 시 포함됨 */
 /* 각 항목 구성비를 소수1자리로 반올림하되, 합계가 정확히 100.0%이 되도록 가장 비중 큰 항목에 오차를 몰아줌(largest-remainder 보정) */
 function balancedPercents(values){
@@ -3159,8 +3357,11 @@ function buildCorpSummaryHtml(kind){
   const corp=document.getElementById('corpName').value||'학교법인 ○○학원';
   const prevSeip=prevData?prevData.seip:null,prevSechul=prevData?prevData.sechul:null;
   const showZero=document.getElementById('tgChongkwal')?document.getElementById('tgChongkwal').checked:true;
-  let seRows=seip.map(g=>({name:g.name,a:gwanSum(g),b:prevGwanSum(prevSeip,g.name)}));
-  let scRows=sechul.map(g=>({name:g.name,a:gwanSum(g),b:prevGwanSum(prevSechul,g.name)}));
+  // a/b: 천원 금액(지침 Ⅴ-3: 세입 절사·세출 절상, 목 단위로 환산 후 합산 → 관 합계와 세입·세출 합계가 어긋나지 않음)
+  // no: 지침 [서식3]/[서식15]의 표준 관 번호(0원 관을 숨겨도 번호가 당겨지지 않음)
+  const seNo=stdNumbers(seip.map(g=>g.name),stdGwanList('seip')), scNo=stdNumbers(sechul.map(g=>g.name),stdGwanList('sechul'));
+  let seRows=seip.map((g,i)=>({no:seNo[i],name:g.name,a:gwanK(g,'seip'),b:gwanK(prevGwanNode(prevSeip,g.name),'seip')}));
+  let scRows=sechul.map((g,i)=>({no:scNo[i],name:g.name,a:gwanK(g,'sechul'),b:gwanK(prevGwanNode(prevSechul,g.name),'sechul')}));
   if(!showZero){seRows=seRows.filter(r=>r.a!==0||r.b!==0);scRows=scRows.filter(r=>r.a!==0||r.b!==0);}
   const seTot=seRows.reduce((s,x)=>s+x.a,0), scTot=scRows.reduce((s,x)=>s+x.a,0);
   const seTotB=seRows.reduce((s,x)=>s+x.b,0), scTotB=scRows.reduce((s,x)=>s+x.b,0);
@@ -3172,21 +3373,21 @@ function buildCorpSummaryHtml(kind){
     const sPct=s&&sePcts[i]!=null?sePcts[i].toFixed(1)+'%':'';
     const xPct=x&&scPcts[i]!=null?scPcts[i].toFixed(1)+'%':'';
     body+=`<tr>
-      <td class="l" style="white-space:nowrap;word-break:keep-all">${s?(i+1)+'. '+esc(s.name):''}</td>
-      <td class="r" contenteditable>${s?numB1k(s.a):''}</td>
-      <td class="r" contenteditable>${s?numB1k(s.b):''}</td>
-      <td class="r" style="white-space:nowrap">${s?diffMark(Math.round(s.a/1000)-Math.round(s.b/1000)):''}</td>
+      <td class="l" style="white-space:nowrap;word-break:keep-all">${s?s.no+'. '+esc(s.name):''}</td>
+      <td class="r" contenteditable>${s?numK(s.a):''}</td>
+      <td class="r" contenteditable>${s?numK(s.b):''}</td>
+      <td class="r" style="white-space:nowrap">${s?diffMark(s.a-s.b):''}</td>
       <td class="r" style="white-space:nowrap">${sPct}</td>
-      <td class="l" style="white-space:nowrap;word-break:keep-all">${x?(i+1)+'. '+esc(x.name):''}</td>
-      <td class="r" contenteditable>${x?numB1k(x.a):''}</td>
-      <td class="r" contenteditable>${x?numB1k(x.b):''}</td>
-      <td class="r" style="white-space:nowrap">${x?diffMark(Math.round(x.a/1000)-Math.round(x.b/1000)):''}</td>
+      <td class="l" style="white-space:nowrap;word-break:keep-all">${x?x.no+'. '+esc(x.name):''}</td>
+      <td class="r" contenteditable>${x?numK(x.a):''}</td>
+      <td class="r" contenteditable>${x?numK(x.b):''}</td>
+      <td class="r" style="white-space:nowrap">${x?diffMark(x.a-x.b):''}</td>
       <td class="r" style="white-space:nowrap">${xPct}</td>
     </tr>`;
   }
   body+=`<tr class="tot">
-    <td>세입합계</td><td class="r">${won1k(seTot)}</td><td class="r">${won1k(seTotB)}</td><td class="r">${diffMark(Math.round(seTot/1000)-Math.round(seTotB/1000))}</td><td class="r" style="white-space:nowrap">100%</td>
-    <td>세출합계</td><td class="r">${won1k(scTot)}</td><td class="r">${won1k(scTotB)}</td><td class="r">${diffMark(Math.round(scTot/1000)-Math.round(scTotB/1000))}</td><td class="r" style="white-space:nowrap">100%</td>
+    <td>세입합계</td><td class="r">${won(seTot)}</td><td class="r">${won(seTotB)}</td><td class="r">${diffMark(seTot-seTotB)}</td><td class="r" style="white-space:nowrap">100%</td>
+    <td>세출합계</td><td class="r">${won(scTot)}</td><td class="r">${won(scTotB)}</td><td class="r">${diffMark(scTot-scTotB)}</td><td class="r" style="white-space:nowrap">100%</td>
   </tr>`;
   /* 헤더 줄바꿈: '전년도예산액' → 전년도/예산액/(B) 3줄, '예산액'처럼 짧은 건 그대로 2줄 */
   const hA=hdr3(c.a),hB=hdr3(c.b);
@@ -3208,6 +3409,334 @@ function buildCorpSummaryHtml(kind){
     <div style="font-size:9pt;margin-top:8px"><span contenteditable>${esc(corp)}</span></div>
   </div>`;
   return html;
+}
+
+/* ================= 한글(HWPX) 저장 =================
+   미리보기 용지(.paper)에 보이는 칸(td·격자 div)의 화면 위치를 재서 한글 표 하나로 합친다.
+   - 위아래로 맞붙은 표·격자는 하나의 표로 합침 (선 위치를 모아 행·열 격자를 만들고 병합 칸으로 배치)
+   - 미리보기에서 직접 고친 내용(contenteditable)도 그대로 들어감
+   - 용지 1장 = 한글 1쪽 (다음 용지는 쪽 나눔)
+   - zip 은 압축 없이(STORE) 직접 묶음 — 외부 라이브러리 없음
+   사용: saveHwpx('expensePaperHost','지출결의서_2026') */
+const HWPX={
+  PAGE_W:59528,PAGE_H:84188,                 // A4 (HWPUNIT: 1mm ≈ 283.46)
+  MARGIN:{left:4535,right:4535,top:5102,bottom:5102}, // 용지 여백 16mm·18mm (.paper padding 과 같게)
+  FONT:'함초롬바탕',
+  SNAP:3,                                     // 이 픽셀 이내의 선은 같은 선으로 봄
+  NOPRINT:'.noprint,.subtabs'
+};
+function hwpxEsc(s){return String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function hwpxColor(css){ // 'rgb(242, 242, 242)' → '#F2F2F2' (투명·흰색이면 null)
+  const m=String(css).match(/rgba?\(([^)]+)\)/);if(!m)return null;
+  const v=m[1].split(',').map(x=>parseFloat(x));
+  if(v.length>3&&v[3]===0)return null;
+  if(v[0]>=254&&v[1]>=254&&v[2]>=254)return null;
+  return '#'+v.slice(0,3).map(n=>Math.round(n).toString(16).padStart(2,'0')).join('').toUpperCase();
+}
+function hwpxAlign(el,cs){
+  if(cs.position==='absolute'&&el.parentElement){ // 따로 띄운 글(예: 적요 칸 오른쪽 금액)은 가까운 쪽으로 정렬
+    const r=el.getBoundingClientRect(),pr=el.parentElement.getBoundingClientRect();
+    if(pr.right-r.right<r.left-pr.left)return 'RIGHT';
+  }
+  if(cs.display==='flex'||cs.display==='grid'){
+    if(cs.justifyContent==='center')return 'CENTER';
+    if(/end|right/.test(cs.justifyContent))return 'RIGHT';
+  }
+  const t=cs.textAlign;
+  if(t==='center'||t==='-webkit-center')return 'CENTER';
+  if(t==='right'||t==='end'||t==='-webkit-right')return 'RIGHT';
+  if(t==='justify')return 'JUSTIFY';
+  return 'LEFT';
+}
+function hwpxHidden(el){const cs=getComputedStyle(el);return cs.display==='none'||cs.visibility==='hidden'||el.matches(HWPX.NOPRINT);}
+/* 요소 안의 글을 문단 목록으로 — 자식이 모두 블록이면 자식마다(정렬·글자크기 각자), 아니면 줄 단위 */
+function hwpxParas(el){
+  if(hwpxHidden(el))return [];
+  const kids=[...el.childNodes];
+  const elKids=kids.filter(n=>n.nodeType===1&&!hwpxHidden(n));
+  const directText=kids.some(n=>n.nodeType===3&&n.textContent.trim());
+  const allBlock=elKids.length>0&&!directText&&elKids.every(k=>k.tagName!=='BR'&&!/^inline/.test(getComputedStyle(k).display));
+  if(allBlock)return elKids.flatMap(hwpxParas);
+  const cs=getComputedStyle(el);
+  const lines=(el.innerText||'').replace(/ /g,' ').replace(/\r/g,'').split('\n');
+  while(lines.length&&!lines[0].trim())lines.shift();
+  while(lines.length&&!lines[lines.length-1].trim())lines.pop();
+  const pt=parseFloat(cs.fontSize)*0.75, bold=(parseInt(cs.fontWeight,10)||400)>=600, align=hwpxAlign(el,cs);
+  const lh=parseFloat(cs.lineHeight)/parseFloat(cs.fontSize);           // 'normal'이면 NaN
+  const ls=isNaN(lh)?130:Math.min(300,Math.max(100,Math.round(lh*100)));
+  return lines.map(t=>({text:t,pt,bold,align,ls}));
+}
+function hwpxBordered(el){const cs=getComputedStyle(el);return ['Top','Right','Bottom','Left'].some(s=>hwpxSide(cs,s));}
+function hwpxVisKids(el){return [...el.children].filter(k=>!hwpxHidden(k)&&k.getBoundingClientRect().width>0);}
+/* 가로 줄(flex row) 안에 글 상자가 2개 이상 — 칸으로 나눠 위치를 살림 (예: "년도 법인회계 … 증제 1 호", 감사 서명줄, 표지 세입·세출 상자) */
+function hwpxFlexRow(el){
+  const cs=getComputedStyle(el);
+  if(!/flex/.test(cs.display)||!/^row/.test(cs.flexDirection))return false;
+  if([...el.childNodes].some(n=>n.nodeType===3&&n.textContent.trim()))return false;
+  const kids=hwpxVisKids(el);
+  return kids.length>=2&&kids.every(k=>k.tagName!=='TABLE'&&!k.querySelector('table'));
+}
+/* 이 요소(또는 안쪽)에 표처럼 다뤄야 할 것이 있나: 표·격자·가로 줄·테두리 상자 */
+function hwpxHasBoxes(el){
+  if(el.querySelector('table'))return true;
+  return [...el.querySelectorAll('*')].some(d=>!hwpxHidden(d)&&(getComputedStyle(d).display==='grid'||hwpxFlexRow(d)||hwpxBordered(d)));
+}
+/* 용지 한 장을 블록 목록으로: {type:'boxes',boxes:[...]} 또는 {type:'text',el} (화면 순서) */
+function hwpxBlocks(paper){
+  const out=[];
+  const addBoxes=(list)=>{
+    if(!list.length)return;
+    const top=Math.min(...list.map(b=>b.rect.top)),bottom=Math.max(...list.map(b=>b.rect.bottom));
+    const last=out[out.length-1];
+    if(last&&last.type==='boxes'&&top<=last.bottom+HWPX.SNAP){last.boxes.push(...list);last.bottom=Math.max(last.bottom,bottom);last.top=Math.min(last.top,top);}
+    else out.push({type:'boxes',boxes:list,top,bottom});
+  };
+  const box=(el)=>({el,rect:el.getBoundingClientRect()});
+  const walk=(node)=>{
+    for(const ch of node.children){
+      if(hwpxHidden(ch))continue;
+      const r=ch.getBoundingClientRect();if(!(r.width>0&&r.height>0))continue;
+      const cs=getComputedStyle(ch);
+      if(ch.tagName==='TABLE'){
+        const list=[];
+        for(const row of ch.rows)for(const cell of row.cells){const cr=cell.getBoundingClientRect();if(cr.width>0&&cr.height>0)list.push(box(cell));}
+        addBoxes(list);
+      }else if(cs.display==='grid'||hwpxFlexRow(ch)){
+        const kids=hwpxVisKids(ch).map(box);
+        if(cs.display!=='grid'&&!hwpxBordered(ch)&&!kids.some(k=>hwpxBordered(k.el))){
+          // 테두리 없는 가로 줄: 글 사이 빈 공간을 반씩 나눠 칸을 넓힘(한글에서 줄바꿈 방지),
+          // 원래 글이 붙어 있던 쪽으로 정렬해 위치 유지
+          kids.sort((a,b)=>a.rect.left-b.rect.left);
+          const orig=kids.map(k=>({l:k.rect.left,rt:k.rect.right}));
+          kids.forEach((k,i)=>{
+            const L=i===0?r.left:(orig[i-1].rt+orig[i].l)/2;
+            const R=i===kids.length-1?r.right:(orig[i].rt+orig[i+1].l)/2;
+            const dl=orig[i].l-L,dr=R-orig[i].rt;
+            k.align=Math.abs(dl-dr)<4?'CENTER':(dl<dr?'LEFT':'RIGHT');
+            k.rect={left:L,right:R,top:r.top,bottom:r.bottom};
+          });
+        }
+        addBoxes(kids);
+      }else if(hwpxBordered(ch)&&!ch.querySelector('table')&&![...ch.querySelectorAll('*')].some(d=>!hwpxHidden(d)&&(getComputedStyle(d).display==='grid'||hwpxFlexRow(d)))){
+        addBoxes([box(ch)]);                         // 테두리 있는 상자 하나 = 칸 하나
+      }else if(hwpxHasBoxes(ch)){
+        walk(ch);
+      }else if((ch.innerText||'').trim()){
+        const kids=hwpxVisKids(ch);
+        const direct=[...ch.childNodes].some(n=>n.nodeType===3&&n.textContent.trim());
+        if(kids.length>1&&!direct&&kids.every(k=>!/^inline/.test(getComputedStyle(k).display)))walk(ch); // 블록이 여러 개면 하나씩(사이 간격 살림)
+        else out.push({type:'text',el:ch,top:r.top,bottom:r.bottom});
+      }
+    }
+  };
+  walk(paper);
+  return out;
+}
+/* 선 위치 모으기: 가까운 값끼리 합쳐 정렬된 선 목록 */
+function hwpxLines(vals){
+  const s=[...vals].sort((a,b)=>a-b),lines=[];
+  for(const v of s){if(!lines.length||v-lines[lines.length-1]>HWPX.SNAP)lines.push(v);}
+  return lines;
+}
+function hwpxIdx(lines,v){let bi=0,bd=Infinity;lines.forEach((x,i)=>{const d=Math.abs(x-v);if(d<bd){bd=d;bi=i;}});return bi;}
+function hwpxSide(cs,side){return parseFloat(cs['border'+side+'Width'])>0.3&&cs['border'+side+'Style']!=='none'&&cs['border'+side+'Style']!=='hidden';}
+
+function hwpxBuild(papers){
+  const charPrs=[],charIds={},paraPrs=[],paraIds={},bfs=[],bfIds={};
+  const charId=(pt,bold)=>{const h=Math.max(100,Math.round(pt*100)),k=h+'|'+(bold?1:0);if(!(k in charIds)){charIds[k]=charPrs.length;charPrs.push({h,bold});}return charIds[k];};
+  const paraId=(align,ls,left=0,right=0,prev=0)=>{const k=[align,ls,left,right,prev].join('|');if(!(k in paraIds)){paraIds[k]=paraPrs.length;paraPrs.push({align,ls,left,right,prev});}return paraIds[k];};
+  const bfId=(t,r,b,l,fill)=>{const k=[t,r,b,l].map(x=>x?1:0).join('')+'|'+(fill||'');if(!(k in bfIds)){bfIds[k]=bfs.length+1;bfs.push({t,r,b,l,fill});}return bfIds[k];};
+  bfId(false,false,false,false,null);   // id 1 = 테두리 없음
+  bfId(true,true,true,true,null);        // id 2 = 표 기본(가는 실선)
+  charId(10,false);paraId('JUSTIFY',160);// id 0 = 바탕글
+  const tinyChar=charId(1,false),tinyPara=paraId('LEFT',100); // 쪽 설정만 싣는 빈 문단용
+  const bodyW=HWPX.PAGE_W-HWPX.MARGIN.left-HWPX.MARGIN.right;
+  const paraXml=(p,ls,ind)=>`<hp:p paraPrIDRef="${paraId(p.align,ls,ind?ind.left:0,ind?ind.right:0,ind?ind.prev:0)}" styleIDRef="0"><hp:run charPrIDRef="${charId(p.pt,p.bold)}"><hp:t>${hwpxEsc(p.text)}</hp:t></hp:run></hp:p>`;
+  // 위 간격만 주는 빈 문단 (1pt 글자) — 표 앞 여백·표지의 큰 여백용
+  const spacer=(hu)=>`<hp:p paraPrIDRef="${paraId('LEFT',100,0,0,Math.max(0,hu-100))}" styleIDRef="0"><hp:run charPrIDRef="${tinyChar}"><hp:t></hp:t></hp:run></hp:p>`;
+  let tblSeq=0;const body=[];const prv=[];
+  papers.forEach((paper,pi)=>{
+    const pcs=getComputedStyle(paper),pr=paper.getBoundingClientRect();
+    const cLeft=pr.left+parseFloat(pcs.borderLeftWidth)+parseFloat(pcs.paddingLeft);
+    const cRight=pr.right-parseFloat(pcs.borderRightWidth)-parseFloat(pcs.paddingRight);
+    const S=bodyW/(cRight-cLeft);                             // 화면 px → HWPUNIT
+    const firstIdx=body.length;
+    const cTop=pr.top+parseFloat(pcs.borderTopWidth)+parseFloat(pcs.paddingTop);
+    const cBottom=pr.bottom-parseFloat(pcs.borderBottomWidth)-parseFloat(pcs.paddingBottom);
+    let lastBottom=cTop;
+    // 위 간격(px→HU). 한글 줄 높이가 조금 더 커서 5% 줄이고, 아래쪽에 붙은 글(표지 법인명 등)은
+    // 쪽 끝 90% 안에 들어오도록 간격을 줄여 다음 쪽으로 밀리지 않게 함 (한 장짜리 용지만)
+    const onePage=(cBottom-cTop)<=(HWPX.PAGE_H-HWPX.MARGIN.top-HWPX.MARGIN.bottom)/S*1.02;
+    const gapHU=(top,bottom)=>{
+      let g=Math.max(0,top-lastBottom);
+      const over=(bottom-cTop)-(cBottom-cTop)*0.9;
+      if(onePage&&over>0)g=Math.max(0,g-over);
+      return Math.round(g*S*0.95);
+    };
+    for(const blk of hwpxBlocks(paper)){
+      if(blk.type==='text'){
+        const el=blk.el,ecs=getComputedStyle(el),er=el.getBoundingClientRect();
+        const left=Math.max(0,Math.round((er.left+parseFloat(ecs.borderLeftWidth)+parseFloat(ecs.paddingLeft)-cLeft)*S));
+        const right=Math.max(0,Math.round((cRight-er.right+parseFloat(ecs.borderRightWidth)+parseFloat(ecs.paddingRight))*S));
+        let prev=gapHU(er.top+parseFloat(ecs.paddingTop),er.bottom);
+        for(const p of hwpxParas(el)){body.push(paraXml(p,p.ls,{left,right,prev}));prev=0;prv.push(p.text);}
+        lastBottom=er.bottom;
+        continue;
+      }
+      const g=gapHU(blk.top,blk.bottom);
+      if(g>150)body.push(spacer(g));
+      lastBottom=blk.bottom;
+      const boxes=blk.boxes;
+      const xs=hwpxLines(boxes.flatMap(b=>[b.rect.left,b.rect.right]));
+      const ys=hwpxLines(boxes.flatMap(b=>[b.rect.top,b.rect.bottom]));
+      const nc=xs.length-1,nr=ys.length-1;
+      if(nc<1||nr<1)continue;
+      // 선 표시 지도: h[y선][열칸], v[x선][행칸]
+      const H=ys.map(()=>new Array(nc).fill(false)),V=xs.map(()=>new Array(nr).fill(false));
+      const occ=Array.from({length:nr},()=>new Array(nc).fill(-1));
+      const cells=[];
+      for(const b of boxes){
+        const c0=hwpxIdx(xs,b.rect.left),c1=hwpxIdx(xs,b.rect.right),r0=hwpxIdx(ys,b.rect.top),r1=hwpxIdx(ys,b.rect.bottom);
+        if(c1<=c0||r1<=r0)continue;
+        let clash=false;for(let r=r0;r<r1;r++)for(let c=c0;c<c1;c++)if(occ[r][c]>=0)clash=true;
+        if(clash){console.warn('[HWPX] 겹치는 칸 건너뜀:',b.el.innerText);continue;}
+        const idx=cells.length;for(let r=r0;r<r1;r++)for(let c=c0;c<c1;c++)occ[r][c]=idx;
+        const cs=getComputedStyle(b.el);
+        const side={Top:hwpxSide(cs,'Top'),Right:hwpxSide(cs,'Right'),Bottom:hwpxSide(cs,'Bottom'),Left:hwpxSide(cs,'Left')};
+        // 칸 가장자리가 감싸는 상자(격자·줄·표지 상자)의 테두리와 겹치면 그 선도 칸 테두리로 (용지까지 올라가며 확인)
+        for(let a=b.el.parentElement;a&&a!==paper&&!a.classList.contains('paper');a=a.parentElement){
+          if(/^(TR|TBODY|THEAD|TFOOT|TABLE)$/.test(a.tagName))continue;
+          const cr=a.getBoundingClientRect(),ccs=getComputedStyle(a),n=HWPX.SNAP;
+          if(Math.abs(b.rect.top-cr.top)<=n&&hwpxSide(ccs,'Top'))side.Top=true;
+          if(Math.abs(b.rect.bottom-cr.bottom)<=n&&hwpxSide(ccs,'Bottom'))side.Bottom=true;
+          if(Math.abs(b.rect.left-cr.left)<=n&&hwpxSide(ccs,'Left'))side.Left=true;
+          if(Math.abs(b.rect.right-cr.right)<=n&&hwpxSide(ccs,'Right'))side.Right=true;
+        }
+        for(let c=c0;c<c1;c++){if(side.Top)H[r0][c]=true;if(side.Bottom)H[r1][c]=true;}
+        for(let r=r0;r<r1;r++){if(side.Left)V[c0][r]=true;if(side.Right)V[c1][r]=true;}
+        let valign='CENTER';
+        if(b.el.tagName==='TD'||b.el.tagName==='TH'){if(cs.verticalAlign==='top')valign='TOP';else if(cs.verticalAlign==='bottom')valign='BOTTOM';}
+        else if(cs.display==='flex'||cs.display==='grid'){if(/start|top/.test(cs.alignItems))valign='TOP';else if(/end|bottom/.test(cs.alignItems))valign='BOTTOM';}
+        else valign='TOP';
+        const paras=hwpxParas(b.el);if(b.align)paras.forEach(p=>p.align=b.align);
+        cells.push({r0,r1,c0,c1,paras,fill:hwpxColor(cs.backgroundColor),valign,pt:parseFloat(cs.fontSize)*0.75});
+      }
+      // 빈 자리는 테두리 없는 빈 칸으로 채움 (한글 표는 빈 구멍을 허용하지 않음)
+      for(let r=0;r<nr;r++)for(let c=0;c<nc;c++)if(occ[r][c]<0){occ[r][c]=cells.length;cells.push({r0:r,r1:r+1,c0:c,c1:c+1,paras:[],fill:null,valign:'CENTER',pt:10});}
+      const X=xs.map(x=>Math.round((x-xs[0])*S)),Y=ys.map(y=>Math.round((y-ys[0])*S));
+      const any=(arr)=>arr.some(Boolean);
+      const byRow=Array.from({length:nr},()=>[]);
+      for(const c of cells){
+        const t=any(H[c.r0].slice(c.c0,c.c1)),bt=any(H[c.r1].slice(c.c0,c.c1)),l=any(V[c.c0].slice(c.r0,c.r1)),rt=any(V[c.c1].slice(c.r0,c.r1));
+        const bf=bfId(t,rt,bt,l,c.fill);
+        const ps=c.paras.length?c.paras:[{text:'',pt:c.pt,bold:false,align:'CENTER'}];
+        const inner=ps.map(p=>paraXml(p,130)).join('');
+        ps.forEach(p=>p.text&&prv.push(p.text));
+        byRow[c.r0].push({c0:c.c0,xml:
+          `<hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="0" borderFillIDRef="${bf}">`+
+          `<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="${c.valign}" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">${inner}</hp:subList>`+
+          `<hp:cellAddr colAddr="${c.c0}" rowAddr="${c.r0}"/><hp:cellSpan colSpan="${c.c1-c.c0}" rowSpan="${c.r1-c.r0}"/>`+
+          `<hp:cellSz width="${X[c.c1]-X[c.c0]}" height="${Y[c.r1]-Y[c.r0]}"/><hp:cellMargin left="141" right="141" top="141" bottom="141"/></hp:tc>`});
+      }
+      const rows=byRow.map(list=>'<hp:tr>'+list.sort((a,b)=>a.c0-b.c0).map(x=>x.xml).join('')+'</hp:tr>').join('');
+      // 본문 위에 자리를 차지하며 놓이는 표(쪽 경계에서 나뉨) — 가운데 놓인 상자는 가로 위치도 맞춤
+      const float=true;
+      const hOff=Math.max(0,Math.round((xs[0]-cLeft)*S));
+      const pos=`<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="${hOff}"/>`;
+      const tbl=`<hp:tbl id="${++tblSeq}" zOrder="0" numberingType="TABLE"${float?' textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None"':''} pageBreak="CELL" repeatHeader="0" rowCnt="${nr}" colCnt="${nc}" cellSpacing="0" borderFillIDRef="2" noShading="0">`+
+        `<hp:sz width="${X[nc]}" widthRelTo="ABSOLUTE" height="${Y[nr]}" heightRelTo="ABSOLUTE" protect="0"/>${pos}`+
+        `<hp:outMargin left="0" right="0" top="0" bottom="0"/><hp:inMargin left="283" right="283" top="141" bottom="141"/>${rows}</hp:tbl>`;
+      // 표를 싣는 문단은 1pt 글자 — 보통 글자면 표마다 빈 줄 높이(약 5mm)가 더해져 아래로 밀림
+      body.push(`<hp:p paraPrIDRef="${tinyPara}" styleIDRef="0"><hp:run charPrIDRef="${tinyChar}">${tbl}</hp:run></hp:p>`);
+    }
+    // 둘째 장부터는 새 쪽에서 시작
+    if(pi>0&&body.length>firstIdx)body[firstIdx]=body[firstIdx].replace('<hp:p ','<hp:p pageBreak="1" ');
+  });
+  // 쪽 설정(secPr)은 첫 문단 첫 run 에 — 표 문단에는 못 실으므로 1pt 빈 문단을 앞에 둠
+  const m=HWPX.MARGIN;
+  const secPr=`<hp:secPr textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" outlineShapeIDRef="1" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">`+
+    `<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/><hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>`+
+    `<hp:visibility hideFirstHeader="0" hideFirstFooter="0" hideFirstMasterPage="0" border="SHOW_ALL" fill="SHOW_ALL" hideFirstPageNum="0" hideFirstEmptyLine="0" showLineNumber="0"/>`+
+    `<hp:pagePr landscape="WIDELY" width="${HWPX.PAGE_W}" height="${HWPX.PAGE_H}" gutterType="LEFT_ONLY"><hp:margin header="0" footer="0" gutter="0" left="${m.left}" right="${m.right}" top="${m.top}" bottom="${m.bottom}"/></hp:pagePr>`+
+    `<hp:footNotePr><hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/><hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/><hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/><hp:numbering type="CONTINUOUS" newNum="1"/><hp:placement place="EACH_COLUMN" beneathText="0"/></hp:footNotePr>`+
+    `<hp:endNotePr><hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/><hp:noteLine length="14692344" type="SOLID" width="0.12 mm" color="#000000"/><hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="850"/><hp:numbering type="CONTINUOUS" newNum="1"/><hp:placement place="END_OF_DOCUMENT" beneathText="0"/></hp:endNotePr>`+
+    `</hp:secPr><hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl>`;
+  if(body.length&&!body[0].includes('<hp:tbl ')){
+    body[0]=body[0].replace(/<hp:run charPrIDRef="(\d+)">/,`<hp:run charPrIDRef="$1">${secPr}`);
+  }else{
+    body.unshift(`<hp:p paraPrIDRef="${tinyPara}" styleIDRef="0"><hp:run charPrIDRef="${tinyChar}">${secPr}<hp:t></hp:t></hp:run></hp:p>`);
+  }
+  const NS='xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"';
+  const section=`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" ${NS}>\n${body.join('\n')}\n</hs:sec>`;
+  // ---- header.xml ----
+  const langs=['HANGUL','LATIN','HANJA','JAPANESE','OTHER','SYMBOL','USER'];
+  const font=`<hh:font id="0" face="${HWPX.FONT}" type="TTF" isEmbedded="0"><hh:typeInfo familyType="FCAT_GOTHIC" weight="6" proportion="4" contrast="0" strokeVariation="1" armStyle="1" letterform="1" midline="1" xHeight="1"/></hh:font>`;
+  const side=(n,on)=>on?`<hh:${n} type="SOLID" width="0.12 mm" color="#000000"/>`:`<hh:${n} type="NONE" width="0.1 mm" color="#000000"/>`;
+  const bfXml=bfs.map((b,i)=>`<hh:borderFill id="${i+1}" threeD="0" shadow="0" centerLine="NONE" breakCellSeparateLine="0"><hh:slash type="NONE" Crooked="0" isCounter="0"/><hh:backSlash type="NONE" Crooked="0" isCounter="0"/>`+
+    side('leftBorder',b.l)+side('rightBorder',b.r)+side('topBorder',b.t)+side('bottomBorder',b.b)+
+    (b.fill?`<hc:fillBrush><hc:winBrush faceColor="${b.fill}" hatchColor="#000000" alpha="0"/></hc:fillBrush>`:'')+`</hh:borderFill>`).join('');
+  const cpXml=charPrs.map((c,i)=>`<hh:charPr id="${i}" height="${c.h}" textColor="#000000" shadeColor="none" useFontSpace="0" useKerning="0" symMark="NONE" borderFillIDRef="1"${c.bold?' bold="1"':''}>`+
+    `<hh:fontRef hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/><hh:ratio hangul="100" latin="100" hanja="100" japanese="100" other="100" symbol="100" user="100"/>`+
+    `<hh:spacing hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/><hh:relSz hangul="100" latin="100" hanja="100" japanese="100" other="100" symbol="100" user="100"/>`+
+    `<hh:offset hangul="0" latin="0" hanja="0" japanese="0" other="0" symbol="0" user="0"/>${c.bold?'<hh:bold/>':''}</hh:charPr>`).join('');
+  const ppXml=paraPrs.map((p,i)=>`<hh:paraPr id="${i}" tabPrIDRef="0" condense="0" fontLineHeight="0" snapToGrid="0" suppressLineNumbers="0" checked="0" textDir="AUTO">`+
+    `<hh:align horizontal="${p.align}" vertical="BASELINE"/><hh:heading type="NONE" idRef="0" level="0"/>`+
+    `<hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="BREAK_WORD" widowOrphan="0" keepWithNext="0" keepLines="0" pageBreakBefore="0" lineWrap="BREAK"/>`+
+    `<hh:autoSpacing eAsianEng="0" eAsianNum="0"/><hh:margin><hc:intent value="0" unit="HWPUNIT"/><hc:left value="${p.left}" unit="HWPUNIT"/><hc:right value="${p.right}" unit="HWPUNIT"/><hc:prev value="${p.prev}" unit="HWPUNIT"/><hc:next value="0" unit="HWPUNIT"/></hh:margin>`+
+    `<hh:lineSpacing type="PERCENT" value="${p.ls}"/><hh:border borderFillIDRef="1" offsetLeft="0" offsetRight="0" offsetTop="0" offsetBottom="0" connect="0" ignoreMargin="0"/></hh:paraPr>`).join('');
+  const heads=Array.from({length:7},(_,i)=>`<hh:paraHead start="1" level="${i+1}" align="LEFT" useInstWidth="1" autoIndent="1" widthAdjust="0" textOffsetType="PERCENT" textOffset="50" numFormat="DIGIT" charPrIDRef="4294967295" checkable="0"/>`).join('');
+  const header=`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" ${NS} xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core" version="1.4" secCnt="1">`+
+    `<hh:beginNum page="1" footnote="1" endnote="1" pic="1" tbl="1" equation="1"/><hh:refList>`+
+    `<hh:fontfaces itemCnt="7">${langs.map(l=>`<hh:fontface lang="${l}" fontCnt="1">${font}</hh:fontface>`).join('')}</hh:fontfaces>`+
+    `<hh:borderFills itemCnt="${bfs.length}">${bfXml}</hh:borderFills>`+
+    `<hh:charProperties itemCnt="${charPrs.length}">${cpXml}</hh:charProperties>`+
+    `<hh:tabProperties itemCnt="1"><hh:tabPr id="0" autoTabLeft="0" autoTabRight="0"/></hh:tabProperties>`+
+    `<hh:numberings itemCnt="1"><hh:numbering id="1" start="0">${heads}</hh:numbering></hh:numberings><hh:bullets itemCnt="0"/>`+
+    `<hh:paraProperties itemCnt="${paraPrs.length}">${ppXml}</hh:paraProperties>`+
+    `<hh:styles itemCnt="1"><hh:style id="0" type="PARA" name="바탕글" engName="Normal" paraPrIDRef="0" charPrIDRef="0" nextStyleIDRef="0" langID="1042" lockForm="0"/></hh:styles>`+
+    `</hh:refList><hh:compatibleDocument targetProgram="HWP2018"><hh:layoutCompatibility/></hh:compatibleDocument></hh:head>`;
+  const container=`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<ocf:container xmlns:ocf="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf"><ocf:rootfiles><ocf:rootfile full-path="Contents/content.hpf" media-type="application/hwpml-package+xml"/></ocf:rootfiles></ocf:container>`;
+  const hpf=`<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<opf:package xmlns:opf="http://www.idpf.org/2007/opf/" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf" xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"><opf:metadata><opf:meta name="generator" content="법인회계Master"/></opf:metadata>`+
+    `<opf:manifest><opf:item id="header" href="Contents/header.xml" media-type="application/xml"/><opf:item id="section0" href="Contents/section0.xml" media-type="application/xml"/></opf:manifest>`+
+    `<opf:spine><opf:itemref idref="header" linear="no"/><opf:itemref idref="section0" linear="yes"/></opf:spine></opf:package>`;
+  return [
+    ['mimetype','application/hwp+zip'],
+    ['META-INF/container.xml',container],
+    ['Contents/content.hpf',hpf],
+    ['Contents/header.xml',header],
+    ['Contents/section0.xml',section],
+    ['Preview/PrvText.txt',prv.join('\r\n').slice(0,1000)]
+  ];
+}
+/* 압축 없는(STORE) zip — mimetype 이 맨 앞이어야 한글이 HWPX 로 인식 */
+function hwpxZip(files){
+  const enc=new TextEncoder();
+  const crcT=hwpxZip.t||(hwpxZip.t=Array.from({length:256},(_,n)=>{let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;return c>>>0;}));
+  const crc=(d)=>{let c=0xFFFFFFFF;for(let i=0;i<d.length;i++)c=crcT[(c^d[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;};
+  const parts=[],central=[];let off=0;
+  const u16=(v)=>[v&0xFF,(v>>>8)&0xFF],u32=(v)=>[v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF];
+  for(const [name,text] of files){
+    const nm=enc.encode(name),data=enc.encode(text),c=crc(data);
+    const common=[...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(c),...u32(data.length),...u32(data.length),...u16(nm.length),...u16(0)];
+    const local=new Uint8Array([...u32(0x04034b50),...common]);
+    parts.push(local,nm,data);
+    central.push(new Uint8Array([...u32(0x02014b50),...u16(20),...common,...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=local.length+nm.length+data.length;
+  }
+  const cdSize=central.reduce((a,b)=>a+b.length,0);
+  const end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdSize),...u32(off),...u16(0)]);
+  return new Blob([...parts,...central,end],{type:'application/hwp+zip'});
+}
+function saveHwpx(hostId,fileBase){
+  const papers=[...document.querySelectorAll('#'+hostId+' .paper')].filter(p=>p.getBoundingClientRect().width>0);
+  if(!papers.length){alert('미리보기를 먼저 열어 주세요.');return;}
+  let blob;
+  try{blob=hwpxZip(hwpxBuild(papers));}
+  catch(e){console.error(e);alert('한글 파일을 만드는 중 문제가 생겼어요. PDF 저장을 이용해 주세요.\n('+e.message+')');return;}
+  const name=String(fileBase||'문서').replace(/[\\/:*?"<>|]/g,'_')+'.hwpx';
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
 }
 
 window.scrollTo(0,0);
