@@ -215,6 +215,8 @@
   /* 예산서·결산명세서·총괄표 금액칸: 숫자가 줄바꿈되거나 칸 밖으로 나가지 않게 한 줄 + 살짝 작은 글씨(원 단위 결산명세서는 더 작게) */
   .paper table.doc.numfit td.r{white-space:nowrap;font-size:8.5pt;letter-spacing:-.2px;padding-left:2px;padding-right:3px;}
   .paper table.doc.numfit.won td.r{font-size:8pt;}
+  .paper table.doc.cashbook td{padding:1px 3px;}
+  .paper table.doc.cashbook td.cb-fit{white-space:nowrap;overflow:hidden;font-size:8.5pt;letter-spacing:-.3px;}
   .paper [contenteditable]{outline:none;min-width:14px;}
   .paper [contenteditable]:focus{background:#fff6d6;box-shadow:0 0 0 2px #f0d97a inset;}
 
@@ -259,6 +261,13 @@
   .mcard .arw{align-self:flex-end;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;margin-top:6px;transition:.15s;}
   .mcard:hover .arw{background:var(--accent);color:#fff;}
   .beta{font-size:10px;font-weight:800;color:var(--accent);background:var(--accent-soft);padding:2px 6px;border-radius:5px;margin-left:6px;vertical-align:middle;letter-spacing:.5px;}
+  .news{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 22px;margin:4px 0 18px;}
+  .news h3{margin:0 0 10px;font-size:16px;color:var(--navy);display:flex;align-items:center;gap:8px;}
+  .news h3 .new{font-size:10.5px;font-weight:800;background:#e53e3e;color:#fff;padding:2px 7px;border-radius:8px;letter-spacing:.04em;}
+  .news ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .news li{display:flex;gap:12px;align-items:baseline;font-size:14px;line-height:1.55;}
+  .news .d{flex:0 0 auto;font-size:12.5px;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums;}
+  .news a{color:var(--navy);font-weight:700;}
   .bottom{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;}
   .chatcta{grid-column:1/-1;background:linear-gradient(120deg,#eaf1fd,#f4f6fa);border:1px solid var(--line);border-radius:var(--radius);padding:26px 28px;display:flex;align-items:center;gap:20px;box-shadow:var(--shadow);}
   .chatcta .txt{flex:1;}
@@ -322,7 +331,7 @@
       </a>
       <a class="mcard" href="#" onclick="document.querySelector('#tabs [data-tab=sechul]').click();return false;">
         <span class="ic">📄</span><h3>지출</h3>
-        <p>지출결의서 작성과 지출부 관리</p><span class="arw">→</span>
+        <p>지출결의서·지출부·현금출납부</p><span class="arw">→</span>
       </a>
       <a class="mcard" href="#" onclick="document.querySelector('#tabs [data-tab=seip]').click();return false;">
         <span class="ic">💵</span><h3>수입</h3>
@@ -336,6 +345,14 @@
         <span class="ic">🏛️</span><h3>이사회<span class="beta">BETA</span></h3>
         <p>이사회 명단·회의 기초자료 작성</p><span class="arw">→</span>
       </a>
+    </div>
+
+    <div class="news">
+      <h3>📢 업데이트 소식 <span class="new">NEW</span></h3>
+      <ul>
+        <li><span class="d">2026. 10. 9.</span><span><b>현금출납부</b> 추가 — 징수·지출결의서를 날짜순으로 모아 수입·지출·잔액, 월계·누계까지 자동 정리해요. <a href="#" onclick="goCashbook();return false;">현금출납부 바로가기 →</a></span></li>
+        <li><span class="d">2026. 10. 9.</span><span><b>엑셀로 저장·불러오기</b> — 입력한 징수·지출을 엑셀 하나로 저장해 두고, 불러오면 결의서·징수부·지출부·현금출납부가 한 번에 채워져요. (수입·지출 화면 맨 위)</span></li>
+      </ul>
     </div>
 
     <div class="bottom">
@@ -697,6 +714,18 @@
   </section>
 
   <section class="panel" id="panel-seip">
+    <div class="card noprint deal-excel">
+      <h2>엑셀로 저장·불러오기 <span style="font-weight:400;color:var(--sub);font-size:13.5px">— 징수·지출 통합</span></h2>
+      <p class="desc">입력한 징수결의서·지출결의서를 <b>엑셀 파일 하나로 저장</b>해 두고, 다음에 <b>불러오면</b> 징수결의서·징수부·지출결의서·지출부·<b>현금출납부</b>가 한 번에 다시 채워져요. 엑셀에서 줄을 더 적어 넣고 불러와도 돼요(날짜는 2026-10-09, 2026.10.9 모두 인식).</p>
+      <div class="btn-row" style="margin-bottom:10px">
+        <button class="btn accent" onclick="downloadDealTemplate()">💾 엑셀로 저장 (입력한 내용 전체)</button>
+        <button class="btn ghost" onclick="document.getElementById('revenueFile').click()">📂 저장한 엑셀 불러오기</button>
+        <button class="btn ghost" onclick="downloadDealBlank()">⬇ 빈 양식 받기</button>
+        <input type="file" id="revenueFile" accept=".xlsx,.xls" hidden>
+      </div>
+      <p class="hint" style="color:var(--sub)">⚠ 불러오면 지금 화면의 징수·지출 내용이 <b>파일 내용으로 바뀌어요</b>. 저장 파일에는 공급자 <b>주민등록번호·계좌번호</b>가 들어갈 수 있으니 보관에 주의하세요.</p>
+      <p class="hint" id="revenueUploadMsg"></p>
+    </div>
     <div class="subtabs">
       <button class="active" data-sub="revenue"><span class="fc-icon">🧾</span><span class="fc-title">징수결의서</span><span class="fc-desc">세입 건별 결의 작성</span></button>
       <button data-sub="jingsubu"><span class="fc-icon">📗</span><span class="fc-title">징수부</span><span class="fc-desc">세입부 자동 정리</span></button>
@@ -704,16 +733,6 @@
 
     <div class="subpanel active" id="panel-revenue">
     <div id="revenueInput">
-      <div class="card">
-        <h2>엑셀 <span style="font-weight:400;color:var(--sub);font-size:13.5px">— 징수·지출 통합</span></h2>
-        <p class="desc">템플릿 한 파일에 <b>징수결의서·지출결의서 시트가 함께</b> 들어있어요. 어느 쪽에서 업로드하든 <b>한 번에 둘 다</b> 채워지고, 징수부·지출부도 자동으로 갱신돼요. 여러 건을 한꺼번에 작성할 땐 이 방법이 가장 빨라요.</p>
-        <div class="btn-row" style="margin-bottom:10px">
-          <button class="btn accent" onclick="downloadDealTemplate()">⬇ 엑셀 템플릿 다운로드(징수+지출)</button>
-          <button class="btn ghost" onclick="document.getElementById('revenueFile').click()">📂 엑셀 업로드</button>
-          <input type="file" id="revenueFile" accept=".xlsx,.xls" hidden>
-        </div>
-        <p class="hint" id="revenueUploadMsg"></p>
-      </div>
       <div class="card">
         <h2>징수결의서</h2>
         <p class="desc">세입금을 징수 결정할 때마다 건별로 작성하세요. <code>+ 징수결의 추가</code>로 건을 늘리면 작성 순서대로 <b>증서번호(№)</b>가 자동으로 매겨져요. 금액을 입력하면 한글 금액도 자동 변환됩니다.</p>
@@ -773,23 +792,26 @@
   </section>
 
   <section class="panel" id="panel-sechul">
+    <div class="card noprint deal-excel">
+      <h2>엑셀로 저장·불러오기 <span style="font-weight:400;color:var(--sub);font-size:13.5px">— 징수·지출 통합</span></h2>
+      <p class="desc">입력한 징수결의서·지출결의서를 <b>엑셀 파일 하나로 저장</b>해 두고, 다음에 <b>불러오면</b> 징수결의서·징수부·지출결의서·지출부·<b>현금출납부</b>가 한 번에 다시 채워져요. 엑셀에서 줄을 더 적어 넣고 불러와도 돼요(날짜는 2026-10-09, 2026.10.9 모두 인식).</p>
+      <div class="btn-row" style="margin-bottom:10px">
+        <button class="btn accent" onclick="downloadDealTemplate()">💾 엑셀로 저장 (입력한 내용 전체)</button>
+        <button class="btn ghost" onclick="document.getElementById('expenseFile').click()">📂 저장한 엑셀 불러오기</button>
+        <button class="btn ghost" onclick="downloadDealBlank()">⬇ 빈 양식 받기</button>
+        <input type="file" id="expenseFile" accept=".xlsx,.xls" hidden>
+      </div>
+      <p class="hint" style="color:var(--sub)">⚠ 불러오면 지금 화면의 징수·지출 내용이 <b>파일 내용으로 바뀌어요</b>. 저장 파일에는 공급자 <b>주민등록번호·계좌번호</b>가 들어갈 수 있으니 보관에 주의하세요.</p>
+      <p class="hint" id="expenseUploadMsg"></p>
+    </div>
     <div class="subtabs">
       <button class="active" data-sub="expense"><span class="fc-icon">🧮</span><span class="fc-title">지출결의</span><span class="fc-desc">세출 건별 결의 작성</span></button>
       <button data-sub="jichulbu"><span class="fc-icon">📕</span><span class="fc-title">지출관리</span><span class="fc-desc">세출부 자동 정리</span></button>
+      <button data-sub="cashbook"><span class="fc-icon">💵</span><span class="fc-title">현금출납부</span><span class="fc-desc">수입·지출·잔액 자동 정리</span></button>
     </div>
 
     <div class="subpanel active" id="panel-expense">
     <div id="expenseInput">
-      <div class="card">
-        <h2>엑셀 <span style="font-weight:400;color:var(--sub);font-size:13.5px">— 징수·지출 통합</span></h2>
-        <p class="desc">템플릿 한 파일에 <b>징수결의서·지출결의서 시트가 함께</b> 들어있어요. 어느 쪽에서 업로드하든 <b>한 번에 둘 다</b> 채워지고, 징수부·지출부도 자동으로 갱신돼요. 여러 건을 한꺼번에 작성할 땐 이 방법이 가장 빨라요.</p>
-        <div class="btn-row" style="margin-bottom:10px">
-          <button class="btn accent" onclick="downloadDealTemplate()">⬇ 엑셀 템플릿 다운로드(징수+지출)</button>
-          <button class="btn ghost" onclick="document.getElementById('expenseFile').click()">📂 엑셀 업로드</button>
-          <input type="file" id="expenseFile" accept=".xlsx,.xls" hidden>
-        </div>
-        <p class="hint" id="expenseUploadMsg"></p>
-      </div>
       <div class="card">
         <h2>지출결의서</h2>
         <p class="desc">세출금을 지출할 때마다 건별로 작성하세요. <code>+ 지출결의 추가</code>로 건을 늘리면 작성 순서대로 <b>증서번호(№)</b>가 자동으로 매겨져요. 공급가액·부가세 등을 입력하면 지급액계와 한글 금액이 자동 계산됩니다.</p>
@@ -844,6 +866,27 @@
       </table></div>
     </div>
     <div id="jichulbuPaperHost"></div>
+  </div>
+
+    <div class="subpanel" id="panel-cashbook">
+    <div class="card noprint">
+      <h2>법인회계 현금출납부</h2>
+      <p class="desc">징수결의서는 <b>수입액</b>, 지출결의서는 <b>지출액</b>으로 날짜순으로 자동 정리해요. 잔액·월계·누계는 자동 계산되고, 한 쪽이 차면 <b>다음으로넘김 → 앞에서넘어옴</b>으로 이어져요. 미리보기 칸을 눌러 직접 고칠 수도 있어요.</p>
+      <div class="form-line" style="flex-wrap:wrap">
+        <div class="field"><label>회계연도</label><input type="text" id="cbYear" placeholder="예: 2026" style="width:100px"></div>
+        <div class="field"><label>법인명</label><input type="text" id="cbCorp" value="학교법인 ○○학원" style="width:190px"></div>
+        <div class="field"><label>기간 시작 (비우면 처음부터)</label><input type="date" id="cbFrom"></div>
+        <div class="field"><label>기간 끝 (비우면 끝까지)</label><input type="date" id="cbTo"></div>
+        <div class="field"><label>한 쪽 줄 수</label><input type="number" id="cbRows" value="38" min="10" max="60" style="width:80px"></div>
+      </div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn" onclick="renderCashbook()">🔄 최신 내용으로 새로고침</button>
+        <button class="btn accent" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent" onclick="saveHwpx('cashbookPaperHost','현금출납부')">📝 한글(HWPX) 저장</button>
+      </div>
+      <p class="hint">📌 일자는 징수결의서의 <b>징수부등기일</b>, 지출결의서의 <b>지출부등기일</b>(비어 있으면 발의일 등)을 써요. 지출액은 지출부와 같이 <b>합계(공급가액+부가세+수수료)</b> 기준이고, 지출번호는 지출결의서 증서번호(№)와 같아요. 기간 시작을 정하면 그 전 거래는 맨 위 <b>전기이월</b> 한 줄로 합쳐져요.</p>
+    </div>
+    <div id="cashbookPaperHost"></div>
   </div>
 
   </section>
@@ -988,7 +1031,7 @@ if('scrollRestoration' in history)history.scrollRestoration='manual';
 window.scrollTo(0,0);
 /* ===== 자동 저장 (새로고침/재접속해도 입력한 내용 유지) ===== */
 const AUTOSAVE_KEY='lawAcctTool_autosave_v3'; // v2→v3: 세션 중 테스트하며 쌓인 예산 금액이 새로 열 때마다 그대로 남아있던 문제 — 저장된 값을 무시하고 기본 예시로 한 번 초기화
-const AUTOSAVE_META_IDS=['docKind','fiscalYear','trYear','trCorp','bdCorp','revYear','revCorp','jsbYear','jsbCorp','expYear','expCorp','jcbYear','jcbCorp'];
+const AUTOSAVE_META_IDS=['docKind','fiscalYear','trYear','trCorp','bdCorp','revYear','revCorp','jsbYear','jsbCorp','expYear','expCorp','jcbYear','jcbCorp','cbYear','cbCorp','cbFrom','cbTo','cbRows'];
 let __savedState=null;
 try{const raw=localStorage.getItem(AUTOSAVE_KEY);if(raw)__savedState=JSON.parse(raw);}catch(e){__savedState=null;}
 let __saveTimer=null;
@@ -1503,9 +1546,14 @@ document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.cl
   }
   if(typeof renderFormsList==='function')renderFormsList();
 });
+function goCashbook(){
+  document.querySelector('#tabs [data-tab=sechul]').click();
+  const b=document.querySelector('#panel-sechul .subtabs button[data-sub="cashbook"]');if(b)b.click();
+}
 function onSubRender(id){
   if(id==='jingsubu')renderJingsubu();
   if(id==='jichulbu')renderJichulbu();
+  if(id==='cashbook')renderCashbook();
   if(id==='forms')renderFormsList();
   if(id==='audit')renderAuditForm();
   if(id==='boardnotice')renderBoardNotice();
@@ -2507,22 +2555,57 @@ function openRevenuePreview(){
   document.getElementById('revenuePreviewArea').classList.add('active');window.scrollTo(0,0);
 }
 function closeRevenuePreview(){document.getElementById('revenuePreviewArea').classList.remove('active');document.getElementById('revenueInput').style.display='block';}
-function downloadDealTemplate(){
+/* 엑셀 날짜 셀(직렬번호)·"2026.10.9"·"2026/10/09"·"20261009" 등을 YYYY-MM-DD로 */
+function normDate(v){
+  if(v==null||v==='')return '';
+  if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);
+  if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*86400000);return d.toISOString().slice(0,10);}
+  const s=String(v).trim();
+  let m=s.match(/^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*[.일]?$/);
+  if(!m)m=s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if(m)return `${m[1]}-${String(+m[2]).padStart(2,'0')}-${String(+m[3]).padStart(2,'0')}`;
+  return s;
+}
+const REV_HEAD=["관","항","목","금액(원)","납부자 주소·성명(상호)","적요","발의일(YYYY-MM-DD)","고지서발행일","납입기한","징수부등기일","고지서번호"];
+const EXP_HEAD=["관","항","목","적요","공급가액","부가세","수수료","소득세","주민세","기타공제","발의일","지출원인행위등기일","납품일","검사일","청구일","지출일","지출부등기일","물품대장등기일","공급자상호성명","사업자번호","주민등록번호","주소","계좌번호","영수일자","영수인성명"];
+/* 빈 양식: 머리글만 */
+function downloadDealBlank(){
   const wb=XLSX.utils.book_new();
   const yr=document.getElementById('revYear').value||document.getElementById('expYear').value||'';
+  const corp=document.getElementById('revCorp').value||document.getElementById('expCorp').value||'';
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["항목","값"],["회계연도",yr],["법인명",corp]]),"정보");
+  const r=XLSX.utils.aoa_to_sheet([REV_HEAD]);r['!cols']=REV_HEAD.map(h=>({wch:Math.max(12,Math.min(30,h.length*2+4))}));
+  XLSX.utils.book_append_sheet(wb,r,"징수결의서");
+  const e=XLSX.utils.aoa_to_sheet([EXP_HEAD]);e['!cols']=EXP_HEAD.map(h=>({wch:Math.max(12,Math.min(24,h.length*2+4))}));
+  XLSX.utils.book_append_sheet(wb,e,"지출결의서");
+  XLSX.writeFile(wb,`${yr?yr+'_':''}법인회계_징수지출_빈양식.xlsx`);
+}
+/* 엑셀로 저장: 지금 입력한 징수·지출 전부 + 보기용 현금출납부 시트 */
+function downloadDealTemplate(){
+  const wb=XLSX.utils.book_new();
+  const yr=document.getElementById('revYear').value||document.getElementById('expYear').value||document.getElementById('cbYear').value||'';
   const corp=document.getElementById('revCorp').value||document.getElementById('expCorp').value||'';
   const wsInfo=XLSX.utils.aoa_to_sheet([["항목","값"],["회계연도",yr],["법인명",corp]]);
   wsInfo['!cols']=[{wch:12},{wch:24}];
   XLSX.utils.book_append_sheet(wb,wsInfo,"정보");
-  const revHead=["관","항","목","금액(원)","납부자 주소·성명(상호)","적요","발의일(YYYY-MM-DD)","고지서발행일","납입기한","징수부등기일","고지서번호"];
-  const revRows=revenueList.map(r=>[r.gwan,r.hang,r.mok,r.amount||"",r.payer,r.jeokyo,r.dBalui,r.dGoji,r.dNabgi,r.dJingsu,r.gojiNo]);
+  const revHead=REV_HEAD;
+  const revRows=revenueList.filter(r=>r.amount||r.mok||r.jeokyo||r.payer).map(r=>[r.gwan,r.hang,r.mok,r.amount||"",r.payer,r.jeokyo,r.dBalui,r.dGoji,r.dNabgi,r.dJingsu,r.gojiNo]);
   const wsRev=XLSX.utils.aoa_to_sheet([revHead,...revRows]);wsRev['!cols']=[{wch:12},{wch:12},{wch:14},{wch:12},{wch:26},{wch:30},{wch:14},{wch:14},{wch:14},{wch:14},{wch:12}];
   XLSX.utils.book_append_sheet(wb,wsRev,"징수결의서");
-  const expHead=["관","항","목","적요","공급가액","부가세","수수료","소득세","주민세","기타공제","발의일","지출원인행위등기일","납품일","검사일","청구일","지출일","지출부등기일","물품대장등기일","공급자상호성명","사업자번호","주민등록번호","주소","계좌번호","영수일자","영수인성명"];
-  const expRows=expenseList.map(r=>[r.gwan,r.hang,r.mok,r.jeokyo,r.gongGeupGa||"",r.buga||"",r.susu||"",r.sodeok||"",r.jumin||"",r.gitaGongje||"",r.dBalui,r.dJichulWonin,r.dNappum,r.dGeomsa,r.dCheonggu,r.dJichul,r.dJichulBu,r.dMulpum,r.supName,r.supBizNo,r.supRrn,r.supAddr,r.supAccount,r.yeongsuDate,r.yeongsuName]);
+  const expHead=EXP_HEAD;
+  const expRows=expenseList.filter(r=>calcExpenseRow(r).hapgye||r.mok||r.jeokyo||r.supName).map(r=>[r.gwan,r.hang,r.mok,r.jeokyo,r.gongGeupGa||"",r.buga||"",r.susu||"",r.sodeok||"",r.jumin||"",r.gitaGongje||"",r.dBalui,r.dJichulWonin,r.dNappum,r.dGeomsa,r.dCheonggu,r.dJichul,r.dJichulBu,r.dMulpum,r.supName,r.supBizNo,r.supRrn,r.supAddr,r.supAccount,r.yeongsuDate,r.yeongsuName]);
   const wsExp=XLSX.utils.aoa_to_sheet([expHead,...expRows]);wsExp['!cols']=expHead.map(h=>({wch:Math.max(12,Math.min(24,h.length*2+4))}));
   XLSX.utils.book_append_sheet(wb,wsExp,"지출결의서");
-  XLSX.writeFile(wb,`${yr?yr+'_':''}징수지출결의서_템플릿.xlsx`);
+  // 보기용 현금출납부 (불러올 때는 읽지 않음)
+  const cb=[["※ 보기용 시트 — 불러오기 때는 읽지 않아요. 고칠 땐 징수결의서·지출결의서 시트를 고치세요."],["일자","수취인(납입자)","적요","과목(목)","지출번호","수입액","지출액","잔액"]];
+  cashbookLines('','').lines.forEach(l=>{
+    if(l.type==='row')cb.push([l.date,l.who,l.jeokyo,l.mok,l.no,l.inc||'',l.exp||'',l.bal]);
+    else cb.push(['','',l.label,'','',l.inc||'',l.exp||'',l.type==='month'?'':l.bal]);
+  });
+  const wsCb=XLSX.utils.aoa_to_sheet(cb);wsCb['!cols']=[{wch:12},{wch:20},{wch:36},{wch:16},{wch:8},{wch:14},{wch:14},{wch:15}];
+  XLSX.utils.book_append_sheet(wb,wsCb,"현금출납부");
+  const d=new Date(),stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb,`${yr?yr+'_':''}법인회계_징수지출_${stamp}.xlsx`);
 }
 function handleDealFile(file){
   const msgRev=document.getElementById('revenueUploadMsg');const msgExp=document.getElementById('expenseUploadMsg');
@@ -2543,7 +2626,7 @@ function handleDealFile(file){
       if(wsRev){
         const rows=XLSX.utils.sheet_to_json(wsRev,{header:1,defval:""}).slice(1).filter(r=>r.some(c=>String(c).trim()));
         if(rows.length){
-          revenueList=rows.map(r=>({gwan:String(r[0]||""),hang:String(r[1]||""),mok:String(r[2]||""),amount:parseNum(r[3]),payer:String(r[4]||""),jeokyo:String(r[5]||""),dBalui:String(r[6]||""),dGoji:String(r[7]||""),dNabgi:String(r[8]||""),dJingsu:String(r[9]||""),gojiNo:String(r[10]||"")}));
+          revenueList=rows.map(r=>({gwan:String(r[0]||""),hang:String(r[1]||""),mok:String(r[2]||""),amount:parseNum(r[3]),payer:String(r[4]||""),jeokyo:String(r[5]||""),dBalui:normDate(r[6]),dGoji:normDate(r[7]),dNabgi:normDate(r[8]),dJingsu:normDate(r[9]),gojiNo:String(r[10]||"")}));
           renderRevenueCards();revCount=rows.length;
         }
       }
@@ -2553,9 +2636,9 @@ function handleDealFile(file){
         if(rows.length){
           expenseList=rows.map(r=>({gwan:String(r[0]||""),hang:String(r[1]||""),mok:String(r[2]||""),jeokyo:String(r[3]||""),
             gongGeupGa:parseNum(r[4]),buga:parseNum(r[5]),susu:parseNum(r[6]),sodeok:parseNum(r[7]),jumin:parseNum(r[8]),gitaGongje:parseNum(r[9]),
-            dBalui:String(r[10]||""),dJichulWonin:String(r[11]||""),dNappum:String(r[12]||""),dGeomsa:String(r[13]||""),dCheonggu:String(r[14]||""),dJichul:String(r[15]||""),dJichulBu:String(r[16]||""),dMulpum:String(r[17]||""),
+            dBalui:normDate(r[10]),dJichulWonin:normDate(r[11]),dNappum:normDate(r[12]),dGeomsa:normDate(r[13]),dCheonggu:normDate(r[14]),dJichul:normDate(r[15]),dJichulBu:normDate(r[16]),dMulpum:normDate(r[17]),
             supName:String(r[18]||""),supBizNo:String(r[19]||""),supRrn:String(r[20]||""),supAddr:String(r[21]||""),supAccount:String(r[22]||""),
-            yeongsuDate:String(r[23]||""),yeongsuName:String(r[24]||"")}));
+            yeongsuDate:normDate(r[23]),yeongsuName:String(r[24]||"")}));
           renderExpenseCards();expCount=rows.length;
         }
       }
@@ -2568,15 +2651,15 @@ function handleDealFile(file){
       if(revCount!==null)parts.push(`징수결의서 ${revCount}건`);
       if(expCount!==null)parts.push(`지출결의서 ${expCount}건`);
       if(infoSet)parts.push('회계연도·법인명');
-      text=`✔ ${parts.join(', ')} 불러오기 완료 (징수부·지출부도 자동 갱신)`;color='var(--good)';
+      text=`✔ ${parts.join(', ')} 불러오기 완료 (징수부·지출부·현금출납부도 자동 갱신)`;color='var(--good)';
     }
     if(msgRev){msgRev.textContent=text;msgRev.style.color=color;}
     if(msgExp){msgExp.textContent=text;msgExp.style.color=color;}
-    renderJingsubu();renderJichulbu();
+    renderJingsubu();renderJichulbu();renderCashbook();
   };
   rd.readAsArrayBuffer(file);
 }
-document.getElementById('revenueFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0]);});
+document.getElementById('revenueFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0]);e.target.value='';});
 renderRevenueCards();
 
 /* ================= 지출결의서 탭 ================= */
@@ -2751,7 +2834,7 @@ function openExpensePreview(){
   document.getElementById('expensePreviewArea').classList.add('active');window.scrollTo(0,0);
 }
 function closeExpensePreview(){document.getElementById('expensePreviewArea').classList.remove('active');document.getElementById('expenseInput').style.display='block';}
-document.getElementById('expenseFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0]);});
+document.getElementById('expenseFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0]);e.target.value='';});
 renderExpenseCards();
 
 /* ================= 징수부(세입부) · 지출부(세출부) 탭 ================= */
@@ -2916,6 +2999,94 @@ function renderJichulbu(){
 }
 document.getElementById('jcbYear').addEventListener('input',renderJichulbu);
 document.getElementById('jcbCorp').addEventListener('input',renderJichulbu);
+
+/* ================= 현금출납부 — 징수결의서(수입)·지출결의서(지출)를 날짜순으로 ================= */
+/* 원본: 법인회계현금출납부 스캔본 — 일자|수취인(납입자)|적요|과목(목)|지출번호|수입액|지출액|잔액, 월계·누계, 다음으로넘김 */
+function cashbookEntries(){
+  const out=[];
+  revenueList.forEach((r,i)=>{
+    const amt=r.amount||0;if(amt<=0)return;
+    out.push({date:r.dJingsu||r.dNabgi||r.dGoji||r.dBalui||'',who:r.payer||'',jeokyo:r.jeokyo||'',mok:r.mok||'',no:'',inc:amt,exp:0,kind:0,ord:i});
+  });
+  const nos=assignJichulNos(expenseList);
+  expenseList.forEach((r,i)=>{
+    const amt=calcExpenseRow(r).hapgye;if(amt<=0)return;
+    out.push({date:jichulDateOf(r),who:r.supName||'',jeokyo:r.jeokyo||'',mok:r.mok||'',no:nos[i],inc:0,exp:amt,kind:1,ord:i});
+  });
+  // 같은 날은 수입 먼저, 그다음 입력 순서
+  out.sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.kind-b.kind||a.ord-b.ord);
+  return out;
+}
+/* 화면·엑셀 공용: 거래 줄 + 월계·누계 줄 목록 */
+function cashbookLines(from,to){
+  const all=cashbookEntries();
+  let cumInc=0,cumExp=0;const lines=[];
+  const before=from?all.filter(e=>e.date&&e.date<from):[];
+  before.forEach(e=>{cumInc+=e.inc;cumExp+=e.exp;});
+  if(before.length)lines.push({type:'carry',label:'전기이월',inc:cumInc,exp:cumExp,bal:cumInc-cumExp});
+  const rows=all.filter(e=>!(from&&e.date&&e.date<from)&&!(to&&e.date&&e.date>to));
+  let curYM=null,mInc=0,mExp=0;
+  const flush=()=>{
+    lines.push({type:'month',label:'월계',inc:mInc,exp:mExp});
+    lines.push({type:'cum',label:'누계',inc:cumInc,exp:cumExp,bal:cumInc-cumExp});
+  };
+  rows.forEach(e=>{
+    const ym=(e.date||'').slice(0,7);
+    if(curYM===null)curYM=ym;else if(ym!==curYM){flush();mInc=0;mExp=0;curYM=ym;}
+    cumInc+=e.inc;cumExp+=e.exp;mInc+=e.inc;mExp+=e.exp;
+    lines.push({type:'row',...e,bal:cumInc-cumExp,cInc:cumInc,cExp:cumExp});
+  });
+  if(curYM!==null)flush();
+  return {lines,count:rows.length,cumInc,cumExp};
+}
+function renderCashbook(){
+  const host=document.getElementById('cashbookPaperHost');if(!host)return;
+  const yr=document.getElementById('cbYear').value||document.getElementById('expYear').value||document.getElementById('revYear').value||'';
+  const corp=document.getElementById('cbCorp').value||document.getElementById('expCorp').value||'학교법인 ○○학원';
+  const from=document.getElementById('cbFrom').value,to=document.getElementById('cbTo').value;
+  const per=Math.max(10,Math.min(60,parseInt(document.getElementById('cbRows').value,10)||38));
+  const {lines,count}=cashbookLines(from,to);
+  if(!count&&!lines.length){host.innerHTML='<div class="placeholder"><div class="ic">💵</div>징수결의서·지출결의서에 금액이 입력된 건이 아직 없습니다(또는 고른 기간에 거래가 없어요).</div>';scheduleSave();return;}
+  const w=v=>v?won(v):'';
+  const H='style="height:6mm"';
+  const lineHtml=l=>{
+    if(l.type==='row')return `<tr ${H}><td contenteditable style="white-space:nowrap">${esc(fmtDate(l.date))}</td><td class="l cb-fit" contenteditable>${esc(l.who)}</td><td class="l cb-fit" contenteditable>${esc(l.jeokyo)}</td><td class="l cb-fit" contenteditable>${esc(l.mok)}</td><td contenteditable>${l.no}</td><td class="r" contenteditable>${w(l.inc)}</td><td class="r" contenteditable>${w(l.exp)}</td><td class="r" contenteditable>${won(l.bal)}</td></tr>`;
+    if(l.type==='month')return `<tr ${H}><td></td><td></td><td>월계</td><td></td><td></td><td class="r">${w(l.inc)}</td><td class="r">${w(l.exp)}</td><td class="r"></td></tr>`;
+    return `<tr ${H}><td></td><td></td><td>${l.label}</td><td></td><td></td><td class="r">${w(l.inc)}</td><td class="r">${w(l.exp)}</td><td class="r">${won(l.bal)}</td></tr>`;
+  };
+  // 쪽 나누기: 쪽마다 (앞에서넘어옴) + 본문 + 다음으로넘김
+  const pages=[];let cur=[],lastCum={inc:0,exp:0,bal:0};
+  const cap=()=>per-(pages.length?1:0)-1; // 앞에서넘어옴·다음으로넘김 줄 자리
+  lines.forEach(l=>{
+    if(cur.length>=cap()){pages.push({lines:cur,carry:{...lastCum}});cur=[];}
+    cur.push(l);
+    if(l.type==='row')lastCum={inc:l.cInc,exp:l.cExp,bal:l.bal};
+    else if(l.type==='carry'||l.type==='cum')lastCum={inc:l.inc,exp:l.exp,bal:l.bal};
+  });
+  pages.push({lines:cur,carry:{...lastCum},last:true});
+  const carryRow=(label,c)=>`<tr ${H}><td></td><td></td><td>${label}</td><td></td><td></td><td class="r">${w(c.inc)}</td><td class="r">${w(c.exp)}</td><td class="r">${won(c.bal)}</td></tr>`;
+  let html='',prev=null;
+  pages.forEach((p,pi)=>{
+    let body='';
+    if(prev)body+=carryRow('앞에서넘어옴',prev);
+    p.lines.forEach(l=>{body+=lineHtml(l);});
+    if(!p.last)body+=carryRow('다음으로넘김',p.carry);
+    prev=p.carry;
+    html+=`<div class="paper ${pi>0?'pagebreak':''}">
+      <div style="text-align:center;margin-bottom:10px"><span style="font-size:20pt;font-weight:700;letter-spacing:3px;border-bottom:1.5px solid #000;padding:0 6px 2px">법인회계현금출납부</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:10pt;margin-bottom:4px"><span contenteditable>${esc(yr)}학년도</span><span contenteditable>${esc(corp)} (단위 : 원)</span></div>
+      <table class="doc cashbook" style="table-layout:fixed;font-size:9pt">
+        <colgroup><col style="width:7%"><col style="width:17%"><col style="width:26%"><col style="width:12.5%"><col style="width:5%"><col style="width:10.5%"><col style="width:10.5%"><col style="width:11.5%"></colgroup>
+        <thead><tr><th>일자</th><th>수취인(납입자)</th><th>적　　　요</th><th>과목(목)</th><th style="padding:2px;line-height:1.25">지출<br>번호</th><th>수입액</th><th>지출액</th><th>잔　액</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>
+      <div style="text-align:center;font-size:9pt;margin-top:8px">- ${pi+1} -</div>
+    </div>`;
+  });
+  host.innerHTML=html;
+  scheduleSave();
+}
+['cbYear','cbCorp','cbFrom','cbTo','cbRows'].forEach(id=>document.getElementById(id).addEventListener('input',renderCashbook));
 
 renderJingsubu();
 renderJichulbu();
@@ -3765,4 +3936,4 @@ window.addEventListener('load',()=>window.scrollTo(0,0));
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0b401bfbdcfe4259822f52c8a912a58c"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
-</html>
+</html>
