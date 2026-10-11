@@ -77,3 +77,6 @@ body.desk-layout #panel-board>.subtabs .fc-icon{width:24px;height:24px;font-size
 body.desk-layout #panel-board>.subpanel{flex:0 0 100%;width:100%;min-width:0;padding:22px}
 @media(max-width:1100px){body.desk-layout #panel-board>.subtabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){body.desk-layout #panel-board>.subtabs{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px}body.desk-layout #panel-board>.subpanel{padding:12px}body.desk-layout #panel-board>.subtabs button .fc-title{font-size:13px}}
+/* One unambiguous selected menu and consistent accounting child alignment. */
+.desk-menu button:not(.selected),.desk-menu button:not(.selected):hover{background:transparent;color:#e8f0fa}.desk-menu button:not(.selected):hover{background:#ffffff0b}.desk-menu button.selected,.desk-menu button.selected:hover{background:var(--desk-accent);color:#fff}.desk-accounting{padding-left:0;margin:5px 0;border-left:0}.desk-accounting-label{margin:5px 12px 7px;font-size:12px;color:#aebfd4}.desk-accounting button{padding:12px;font-size:14px}.desk-accounting .desk-icon{display:grid}
+@media(max-width:1100px){.desk-accounting-label{margin:0 5px}.desk-accounting button{padding:9px 11px;font-size:13px}.desk-accounting .desk-icon{display:none}}
