@@ -34,7 +34,7 @@ const expenseButton=nav.querySelectorAll('button')[2],incomeButton=nav.querySele
 const contact=document.querySelector('.chatcta');if(contact){contact.querySelector('h3').textContent='더 편한 법인회계, 함께 만들어가요.';contact.querySelector('p').textContent='사용 중 불편한 점이나 필요한 기능을 알려주세요. 문의와 개선 의견은 카카오 오픈채팅으로 보내실 수 있습니다.';const portrait=contact.querySelector('.avatar img');if(portrait){portrait.src='design/assistant-face.png';portrait.alt='문의 안내 캐릭터'}contact.querySelector('.cta-btn')?.querySelector('img')?.remove();const link=contact.querySelector('.cta-btn');if(link)link.lastChild.textContent='문의·개선 의견 보내기 ↗';}
 
 // One persistent support entry; keep author attribution without repeated calls to action.
-document.querySelectorAll('.credit').forEach(credit=>{const text=credit.textContent.split(/문의|카카오/)[0].replace(/[·/\s]+$/,'').trim();credit.textContent=text;});
+document.querySelectorAll('.credit').forEach(credit=>{credit.textContent='제작자: 정주고등학교 박지은 / 문의: ican6363@naver.com';});
 document.querySelectorAll('a[href*="open.kakao.com"]').forEach(a=>{if(a.closest('.desk-support'))return;const card=a.closest('.chatcta,.askbox,.ls-cta');if(card){card.remove();return;}a.remove();});
 document.querySelectorAll('.desk-contact-link img').forEach(img=>img.remove());
 document.querySelectorAll('.chatcta,.askbox,.ls-cta').forEach(el=>el.remove());document.querySelectorAll('.bottom').forEach(el=>{if(!el.children.length)el.remove()});
