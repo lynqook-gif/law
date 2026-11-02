@@ -125,3 +125,11 @@
  body.brand-law .subtabs>button .fc-icon svg{width:20px!important;height:20px!important;flex:none}
  body.brand-law .subtabs>button .fc-title{margin:0!important;line-height:1.5!important}
 }
+
+@media screen{
+ body.brand-law .desk-hero.law-image-hero{padding:0!important;min-height:0!important;height:max(220px,calc((100vw - 280px)/7.5))!important;display:block!important;overflow:hidden!important;border-radius:17px!important;isolation:isolate}
+ body.brand-law .desk-hero.law-image-hero:before{display:none!important}
+ body.brand-law .law-image-hero .law-banner-image{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 35%!important;max-width:none!important;margin:0!important;border:0!important}
+ body.brand-law .desk-hero.law-image-hero[hidden]{display:none!important}
+}
+@media screen and (max-width:800px){body.brand-law .desk-hero.law-image-hero{height:150px!important;border-radius:12px!important}}

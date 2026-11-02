@@ -246,3 +246,15 @@ if(c.site==='jeonbuk-gyohaeng'){document.querySelectorAll('.quick2').forEach(box
   mobile.addEventListener('change', syncViewport);
   syncViewport();
 })();
+
+/* Illustrated banner with its own lettering and mascot (same series as the uniform guide). */
+(()=>{
+ if(!document.body.classList.contains('brand-law'))return;
+ const hero=document.getElementById('design-hero');if(!hero)return;
+ const image=document.createElement('img');image.className='law-banner-image';
+ image.src='design/law-banner-wide.png';image.alt='교행e의 법인회계Master — 예산부터 결산, 이사회까지 한곳에서';
+ image.width=3300;image.height=440;image.decoding='async';
+ const picture=document.createElement('picture');picture.style.display='contents';
+ const narrow=document.createElement('source');narrow.media='(max-width:560px)';narrow.srcset='design/law-banner-narrow.png';
+ picture.append(narrow,image);hero.replaceChildren(picture);hero.classList.add('law-image-hero');
+})();
