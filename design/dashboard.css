@@ -126,10 +126,124 @@
  body.brand-law .subtabs>button .fc-title{margin:0!important;line-height:1.5!important}
 }
 
-@media screen{
- body.brand-law .desk-hero.law-image-hero{padding:0!important;min-height:0!important;height:max(220px,calc((100vw - 280px)/7.5))!important;display:block!important;overflow:hidden!important;border-radius:17px!important;isolation:isolate}
- body.brand-law .desk-hero.law-image-hero:before{display:none!important}
- body.brand-law .law-image-hero .law-banner-image{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 35%!important;max-width:none!important;margin:0!important;border:0!important}
- body.brand-law .desk-hero.law-image-hero[hidden]{display:none!important}
+
+@media screen {
+ body.brand-law {
+  --law-winter-night: #132540;
+  --law-winter-ink: #fff5df;
+  --law-winter-control: #182b46;
+ }
+ body.brand-law > .brand-topbar {
+  min-height: 0;
+  padding: 8px 28px;
+  justify-content: flex-end;
+  background: transparent;
+  border: 0;
+ }
+ body.brand-law > .brand-topbar > strong { display: none; }
+ body.brand-law:has(.law-christmas-hero:not([hidden])) { position: relative; }
+ body.brand-law:has(.law-christmas-hero:not([hidden])) > .brand-topbar {
+  position: absolute !important;
+  inset: 20px 28px auto auto !important;
+  z-index: 4;
+  height: auto;
+  min-height: 0 !important;
+  padding: 10px 12px !important;
+ }
+ body.brand-law:has(.law-christmas-hero:not([hidden])) > .brand-topbar > a {
+  background: var(--law-winter-control);
+  color: var(--law-winter-ink);
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-size: 12px !important;
+ }
+ body.brand-law header.app { padding-top: 20px !important; }
+ body.brand-law .desk-hero.law-christmas-hero {
+  isolation: isolate;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 37%);
+  padding: 0 !important;
+  min-height: 232px !important;
+  overflow: hidden;
+  background: var(--law-winter-night) url('law-christmas-bg.webp') right center / cover no-repeat !important;
+  border-radius: 17px !important;
+ }
+ body.brand-law .desk-hero.law-christmas-hero::before,
+ body.brand-law .desk-hero.law-christmas-hero[hidden] { display: none !important; }
+ .law-christmas-copy {
+  align-self: center;
+  padding: 36px 12px 34px clamp(22px, 4vw, 70px);
+  min-width: 0;
+ }
+ body.brand-law .law-christmas-copy h1 {
+  margin: 0 !important;
+  color: var(--law-winter-ink) !important;
+ }
+ .law-christmas-copy h1 img {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+ }
+ body.brand-law .law-christmas-copy p {
+  margin: 12px 0 0 !important;
+  color: var(--law-winter-ink) !important;
+  font-size: clamp(13px, 1.4vw, 18px) !important;
+  line-height: 1.5 !important;
+ }
+ .law-christmas-art {
+  display: block;
+  width: 100%;
+  height: clamp(215px, 20vw, 310px);
+  object-fit: contain;
+  object-position: center bottom;
+  align-self: end;
+ }
 }
-@media screen and (max-width:800px){body.brand-law .desk-hero.law-image-hero{height:150px!important;border-radius:12px!important}}
+@media screen and (max-width: 800px) {
+ body.brand-law:has(.law-christmas-hero:not([hidden])) { padding-top: 0 !important; }
+ body.brand-law:has(.law-christmas-hero:not([hidden])) > .brand-topbar {
+  inset: 12px 12px auto !important;
+  justify-content: space-between;
+  background: transparent;
+ }
+ body.brand-law header.app { padding: 12px 12px 0 !important; }
+ body.brand-law .desk-hero.law-christmas-hero {
+  padding-top: 45px !important;
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 36%);
+  background-image: linear-gradient(90deg, #102039b3, transparent), url('law-christmas-bg.webp') !important;
+  border-radius: 12px !important;
+ }
+ .law-christmas-copy { padding: 14px 0 20px 14px; }
+ .law-christmas-art { height: clamp(110px, 23vw, 178px); }
+}
+
+/* Home shortcuts match the portal cards. */
+@media screen {
+ body.brand-law #panel-home .desk-related-sites>div {
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:8px;
+ }
+ body.brand-law #panel-home .desk-related-sites a {
+  box-sizing:border-box;
+  min-width:0;
+  min-height:76px;
+  max-width:100%;
+  padding:8px 4px;
+  gap:5px 3px;
+  display:grid;
+  grid-template-columns:auto auto;
+  grid-template-rows:28px auto;
+  justify-content:center;
+  align-content:start;
+  align-items:center;
+  text-align:center;
+  color:#1e3a5f;
+ }
+ body.brand-law #panel-home .photo-related-icon {grid-column:1/-1;justify-self:center}
+}
+@media screen and (max-width: 800px) {
+ body.brand-law #panel-home .desk-related-sites>div {grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
