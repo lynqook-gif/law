@@ -123,6 +123,8 @@
   table.grid textarea.calc{font-size:13.5px;color:#333;background:#fffdf3;border:1px solid #f0e6c0;resize:vertical;min-height:32px;line-height:1.5;white-space:pre;}
   table.grid textarea.calc:focus{background:#fff;border-color:var(--accent);}
   .calc-out{font-size:12.5px;color:var(--good);font-weight:600;white-space:normal;word-break:keep-all;padding:2px 0 0 4px;}
+  .calc-warn{font-size:12.5px;color:var(--bad);font-weight:600;white-space:normal;word-break:keep-all;padding:2px 0 0 4px;}
+  table.grid textarea.calc.calc-has-warn{border-color:var(--bad);}
   /* 입력표 금액칸: 원 단위 큰 금액(결산 등)도 칸 안에 다 보이게 최소폭 확보 */
   table.grid td.r{white-space:nowrap;font-variant-numeric:tabular-nums;}
   table.grid td.cur{min-width:140px;} table.grid td.cur input.num{min-width:125px;}
@@ -292,7 +294,7 @@
   }
 </style>
 <link rel="stylesheet" href="design/dashboard.css?v=20261116-links1">
-<script defer src="design/dashboard.js?v=20261120-notice1"></script>
+<script defer src="design/dashboard.js?v=20261123-notice1"></script>
 </head>
 <body>
 <header class="nav">
@@ -411,7 +413,7 @@
           📌 출력 규칙<br>
           · 미리보기 상단에서 <b>표지·법인총괄표 포함 여부</b>를 체크로 고를 수 있어요.<br>
           · 미리보기 상단의 <b>0원 표시 토글</b>로 명세서·총괄표에서 0원(추경은 증감 0) 과목을 보이거나 숨길 수 있어요. 기본값은 <b>명세서 숨김 / 총괄표 표시</b>.<br>
-          · 총칙은 본예산엔 있고, 추경은 변동부분 개정형, 결산은 없습니다.<br>
+          · 총칙은 본예산엔 있고, 추경은 변동부분 개정형, 결산은 없어요.<br>
           · 모든 항목은 미리보기에서 직접 눌러 수정할 수 있어요.
         </div>
 
@@ -433,10 +435,10 @@
           <p class="hint" id="loadPrevMsg" style="margin-top:8px"></p>
           <p class="hint" id="loadThisMsg" style="margin:2px 0 0"></p>
           <div class="btn-row" style="margin-top:8px">
-            <button class="btn accent sm" onclick="downloadBudgetTemplate()">⬇ 엑셀 템플릿 받기</button>
-            <button class="btn ghost sm" onclick="resetBudgetUploads()">🔄 초기화</button>
+            <button class="btn accent sm" onclick="downloadBudgetTemplate()">⬇ 양식 받기</button>
+            <button class="btn ghost sm" onclick="resetBudgetUploads()">🗑 초기화</button>
           </div>
-          <p class="hint" style="margin:6px 0 0">🔄 초기화: 올린 파일과 작성 중인 내용을 모두 지우고 처음 상태로 돌아가요.</p>
+          <p class="hint" style="margin:6px 0 0">🗑 초기화: 올린 파일과 작성 중인 내용을 모두 지우고 처음 상태로 돌아가요.</p>
         </div>
 
         <div class="info-line" id="previewNotice" style="display:none">📄 <b>미리보기</b> — 불러온 두 파일이 아래 표에 비교로 나와요. 셀을 눌러 바로 직접 수정할 수 있어요.</div>
@@ -504,7 +506,7 @@
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;cursor:pointer">
           <input type="checkbox" id="tgChongkwal" checked style="width:auto"> 총괄표 0원 표시
         </label>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('paperHost',(document.getElementById('docKind').selectedOptions[0]||{}).textContent||'예산서')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closePreview()">← 입력으로 돌아가기</button>
       </div>
@@ -515,17 +517,23 @@
     <div class="subpanel" id="panel-transfer">
     <div class="card">
       <h2>법인전입금 관리</h2>
-      <p class="desc">교직원 법정부담금(연금·건강보험·재해보상)을 학교별로 산정하고, 전입(전출)금 종류별 예정액·전출액·잔액을 관리해요. 산정된 법정부담금은 아래 관리대장으로 자동 연결됩니다.</p>
+      <p class="desc">교직원 법정부담금(연금·건강보험·재해보상)을 학교별로 산정하고, 전입(전출)금 종류별 예정액·전출액·잔액을 관리해요. 산정된 법정부담금은 아래 관리대장으로 자동 연결돼요.</p>
       <div class="form-line">
         <div class="field"><label>회계연도</label><input type="text" id="trYear" placeholder="예: 2026" style="width:100px"></div>
         <div class="field"><label>법인명</label><input type="text" id="trCorp" value="학교법인 ○○학원" style="width:190px"></div>
       </div>
+      <div class="btn-row noprint" style="margin-top:12px">
+        <button class="btn ghost sm" onclick="downloadTransferJSON()">💾 작업 저장</button>
+        <button class="btn ghost sm" onclick="document.getElementById('transferJsonFile').click()">📂 작업 불러오기</button>
+        <input type="file" id="transferJsonFile" accept=".json" hidden>
+      </div>
+      <p class="hint" style="color:var(--sub)">입력한 내용은 이 컴퓨터 브라우저에 자동 저장돼요. 다른 컴퓨터로 옮길 땐 💾 작업 저장을 쓰세요.</p>
     </div>
 
     <!-- ① 법정부담금 산정 -->
     <div class="card">
       <h2>① 법정부담금 산정</h2>
-      <p class="desc">학교별로 연금·건강보험·재해보상 부담금을 산정해요. 병설(중·고 등)이면 학교를 나눠 계상합니다.</p>
+      <p class="desc">학교별로 연금·건강보험·재해보상 부담금을 산정해요. 병설(중·고 등)이면 학교를 나눠 계상해요.</p>
       <div class="mode-toggle" data-group="legal">
         <button class="active" data-mode="direct">직접 입력</button>
         <button data-mode="rate">요율 산정</button>
@@ -553,7 +561,7 @@
       <!-- 요율 산정 -->
       <div class="mode-body" data-body="legal-rate">
         <div class="info-line" style="margin-bottom:12px">
-          <b>요율 설정</b> — 요율은 매년 바뀌니 반드시 확인 후 입력하세요. 기본값은 <b>2026년 법인(사용자) 부담분</b> 기준 예시입니다.
+          <b>요율 설정</b> — 요율은 매년 바뀌니 반드시 확인 후 입력하세요. 기본값은 <b>2026년 법인(사용자) 부담분</b> 기준 예시예요.
         </div>
         <div class="form-line" style="gap:18px">
           <div class="field"><label>보수 입력 단위</label>
@@ -657,10 +665,10 @@
           <button class="btn ghost" onclick="toggleAllForms(false)">전체 해제</button>
         </div>
         <div class="btn-row" style="margin-top:8px">
-          <button class="btn accent" onclick="downloadFormsTemplate()">⬇ 엑셀 템플릿 다운로드(전체 18종)</button>
-          <button class="btn ghost" onclick="document.getElementById('formsFile').click()">📂 엑셀 업로드</button>
+          <button class="btn accent" onclick="downloadFormsTemplate()">⬇ 양식 받기(전체 18종)</button>
+          <button class="btn ghost" onclick="document.getElementById('formsFile').click()">⬆ 엑셀 올리기</button>
           <input type="file" id="formsFile" accept=".xlsx,.xls" hidden>
-          <span class="hint" style="margin:0">템플릿은 18개 서식이 전부 들어있어요(예산·결산 구분 없이 한 번에 다운로드/업로드). 작성 후 올리면 자동으로 채워지고 해당 서식이 체크됩니다.</span>
+          <span class="hint" style="margin:0">템플릿은 18개 서식이 전부 들어있어요(예산·결산 구분 없이 한 번에 다운로드/업로드). 작성 후 올리면 자동으로 채워지고 해당 서식이 체크돼요.</span>
         </div>
         <p class="hint" id="formsUploadMsg"></p>
         <div id="formsList"></div>
@@ -670,7 +678,7 @@
     <div id="formsPreviewArea">
       <div class="doc-toolbar">
         <span class="t">📄 부속서식 미리보기 · A4 세로</span>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('formsPaperHost','부속서식')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeFormsPreview()">← 입력으로 돌아가기</button>
       </div>
@@ -694,10 +702,10 @@
         <p class="desc" style="line-height:1.8">지침 [서식26] 감사보고서예요. 아래 칸에 직접 쓰거나, 엑셀 템플릿에 적어서 올리면 채워져요.<br>
           빈 칸은 자동으로 채워요. (회계연도·법인명: 결산 화면 / 감사 성명: 이사회 명단)</p>
         <div class="btn-row" style="margin-bottom:10px">
-          <button class="btn accent" onclick="downloadAuditTemplate()">⬇ 엑셀 템플릿 다운로드</button>
-          <button class="btn ghost" onclick="document.getElementById('auditFile').click()">📂 엑셀 업로드</button>
+          <button class="btn accent" onclick="downloadAuditTemplate()">⬇ 양식 받기</button>
+          <button class="btn ghost" onclick="document.getElementById('auditFile').click()">⬆ 엑셀 올리기</button>
           <input type="file" id="auditFile" accept=".xlsx,.xls" hidden onchange="if(this.files[0])uploadAuditFile(this.files[0]);this.value=''">
-          <button class="btn ghost" onclick="if(confirm('감사보고서 입력 내용을 처음 상태로 되돌릴까요?')){auditReport=newAuditReport();renderAuditForm();saveState();}">🔄 초기화</button>
+          <button class="btn ghost" onclick="if(confirm('감사보고서 입력 내용을 처음 상태로 되돌릴까요?')){auditReport=newAuditReport();renderAuditForm();saveState();}">🗑 초기화</button>
         </div>
         <p class="hint" id="auditUploadMsg"></p>
         <div class="form-line" id="auditFormHost" style="flex-wrap:wrap;gap:10px 14px"></div>
@@ -709,7 +717,7 @@
     <div id="auditPreviewArea">
       <div class="doc-toolbar">
         <span class="t">🔍 감사보고서 미리보기 · A4 세로</span>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('auditPaperHost','감사보고서')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeAuditPreview()">← 입력으로 돌아가기</button>
       </div>
@@ -727,12 +735,12 @@
       <h2>엑셀로 저장·불러오기 <span style="font-weight:400;color:var(--sub);font-size:13.5px">— 징수·지출 통합</span></h2>
       <p class="desc">입력한 징수결의서·지출결의서를 <b>엑셀 파일 하나로 저장</b>해 두고, 다음에 <b>불러오면</b> 징수결의서·징수부·지출결의서·지출부·<b>현금출납부</b>가 한 번에 다시 채워져요. 엑셀에서 줄을 더 적어 넣고 불러와도 돼요(날짜는 2026-10-09, 2026.10.9 모두 인식).</p>
       <div class="btn-row" style="margin-bottom:10px">
-        <button class="btn accent" onclick="downloadDealTemplate()">💾 엑셀로 저장 (입력한 내용 전체)</button>
-        <button class="btn ghost" onclick="document.getElementById('revenueFile').click()">📂 저장한 엑셀 불러오기</button>
-        <button class="btn ghost" onclick="downloadDealBlank()">⬇ 빈 양식 받기</button>
+        <button class="btn accent" onclick="downloadDealTemplate()">💾 작업 저장(엑셀)</button>
+        <button class="btn ghost" onclick="document.getElementById('revenueFile').click()">📂 작업 불러오기(엑셀)</button>
+        <button class="btn ghost" onclick="downloadDealBlank()">⬇ 양식 받기</button>
         <input type="file" id="revenueFile" accept=".xlsx,.xls" hidden>
       </div>
-      <p class="hint" style="color:var(--sub)">⚠ 불러오면 지금 화면의 징수·지출 내용이 <b>파일 내용으로 바뀌어요</b>. 저장 파일에는 공급자 <b>주민등록번호·계좌번호</b>가 들어갈 수 있으니 보관에 주의하세요.</p>
+      <p class="hint" style="color:var(--sub)">⚠ 💾 작업 저장(엑셀) 파일에는 <b>개인정보(주민번호·계좌번호)</b>가 들어가요. 보관에 주의하세요.<br>📂 불러오면 지금 징수·지출 내용이 파일 내용으로 바뀌어요.</p>
       <p class="hint" id="revenueUploadMsg"></p>
     </div>
     <div class="subtabs">
@@ -744,7 +752,7 @@
     <div id="revenueInput">
       <div class="card">
         <h2>징수결의서</h2>
-        <p class="desc">세입금을 징수 결정할 때마다 건별로 작성하세요. <code>+ 징수결의 추가</code>로 건을 늘리면 작성 순서대로 <b>증서번호(№)</b>가 자동으로 매겨져요. 금액을 입력하면 한글 금액도 자동 변환됩니다.</p>
+        <p class="desc">세입금을 징수 결정할 때마다 건별로 작성하세요. <code>+ 징수결의 추가</code>로 건을 늘리면 작성 순서대로 <b>증서번호(№)</b>가 자동으로 매겨져요. 금액을 입력하면 한글 금액도 자동 변환돼요.</p>
         <div class="form-line">
           <div class="field"><label>회계연도</label><input type="text" id="revYear" placeholder="예: 2026" style="width:100px"></div>
           <div class="field"><label>법인명</label><input type="text" id="revCorp" value="학교법인 ○○학원" style="width:190px"></div>
@@ -764,7 +772,7 @@
     <div id="revenuePreviewArea">
       <div class="doc-toolbar">
         <span class="t">📄 징수결의서 미리보기 · A4 세로</span>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('revenuePaperHost','징수결의서')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeRevenuePreview()">← 입력으로 돌아가기</button>
       </div>
@@ -782,10 +790,10 @@
       </div>
       <div class="btn-row" style="margin-top:8px">
         <button class="btn" onclick="renderJingsubu()">🔄 최신 내용으로 새로고침</button>
-        <button class="btn accent" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent" onclick="saveHwpx('jingsubuPaperHost','징수부')">📝 한글(HWPX) 저장</button>
       </div>
-      <p class="hint">📌 각 건은 징수결정액·수입액을 동일 금액으로 전액 수납 처리해 두 줄로 표시합니다(미수액 관리는 지원하지 않음). 일자는 결의서의 <b>징수부등기일</b>(비어 있으면 발의일 등)을 기준으로 정렬·월계 처리해요. 예산액은 '본예산·추경·결산' 탭 이름 매칭으로 자동으로 채워지며, 아래에서 <b>직접 입력해 덮어쓸 수도</b> 있어요.</p>
+      <p class="hint">📌 각 건은 징수결정액·수입액을 동일 금액으로 전액 수납 처리해 두 줄로 표시해요(미수액 관리는 지원하지 않음). 일자는 결의서의 <b>징수부등기일</b>(비어 있으면 발의일 등)을 기준으로 정렬·월계 처리해요. 예산액은 '본예산·추경·결산' 탭 이름 매칭으로 자동으로 채워지며, 아래에서 <b>직접 입력해 덮어쓸 수도</b> 있어요.</p>
     </div>
     <div class="card noprint" id="jingsubuBudgetCard" style="display:none">
       <h2>예산액 입력</h2>
@@ -805,12 +813,12 @@
       <h2>엑셀로 저장·불러오기 <span style="font-weight:400;color:var(--sub);font-size:13.5px">— 징수·지출 통합</span></h2>
       <p class="desc">입력한 징수결의서·지출결의서를 <b>엑셀 파일 하나로 저장</b>해 두고, 다음에 <b>불러오면</b> 징수결의서·징수부·지출결의서·지출부·<b>현금출납부</b>가 한 번에 다시 채워져요. 엑셀에서 줄을 더 적어 넣고 불러와도 돼요(날짜는 2026-10-09, 2026.10.9 모두 인식).</p>
       <div class="btn-row" style="margin-bottom:10px">
-        <button class="btn accent" onclick="downloadDealTemplate()">💾 엑셀로 저장 (입력한 내용 전체)</button>
-        <button class="btn ghost" onclick="document.getElementById('expenseFile').click()">📂 저장한 엑셀 불러오기</button>
-        <button class="btn ghost" onclick="downloadDealBlank()">⬇ 빈 양식 받기</button>
+        <button class="btn accent" onclick="downloadDealTemplate()">💾 작업 저장(엑셀)</button>
+        <button class="btn ghost" onclick="document.getElementById('expenseFile').click()">📂 작업 불러오기(엑셀)</button>
+        <button class="btn ghost" onclick="downloadDealBlank()">⬇ 양식 받기</button>
         <input type="file" id="expenseFile" accept=".xlsx,.xls" hidden>
       </div>
-      <p class="hint" style="color:var(--sub)">⚠ 불러오면 지금 화면의 징수·지출 내용이 <b>파일 내용으로 바뀌어요</b>. 저장 파일에는 공급자 <b>주민등록번호·계좌번호</b>가 들어갈 수 있으니 보관에 주의하세요.</p>
+      <p class="hint" style="color:var(--sub)">⚠ 💾 작업 저장(엑셀) 파일에는 <b>개인정보(주민번호·계좌번호)</b>가 들어가요. 보관에 주의하세요.<br>📂 불러오면 지금 징수·지출 내용이 파일 내용으로 바뀌어요.</p>
       <p class="hint" id="expenseUploadMsg"></p>
     </div>
     <div class="subtabs">
@@ -823,7 +831,7 @@
     <div id="expenseInput">
       <div class="card">
         <h2>지출결의서</h2>
-        <p class="desc">세출금을 지출할 때마다 건별로 작성하세요. <code>+ 지출결의 추가</code>로 건을 늘리면 작성 순서대로 <b>증서번호(№)</b>가 자동으로 매겨져요. 공급가액·부가세 등을 입력하면 지급액계와 한글 금액이 자동 계산됩니다.</p>
+        <p class="desc">세출금을 지출할 때마다 건별로 작성하세요. <code>+ 지출결의 추가</code>로 건을 늘리면 작성 순서대로 <b>증서번호(№)</b>가 자동으로 매겨져요. 공급가액·부가세 등을 입력하면 지급액계와 한글 금액이 자동 계산돼요.</p>
         <div class="form-line">
           <div class="field"><label>회계연도</label><input type="text" id="expYear" placeholder="예: 2026" style="width:100px"></div>
           <div class="field"><label>법인명</label><input type="text" id="expCorp" value="학교법인 ○○학원" style="width:190px"></div>
@@ -843,7 +851,7 @@
     <div id="expensePreviewArea">
       <div class="doc-toolbar">
         <span class="t">📄 지출결의서 미리보기 · A4 세로</span>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('expensePaperHost','지출결의서_'+(document.getElementById('expYear').value||''))">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeExpensePreview()">← 입력으로 돌아가기</button>
       </div>
@@ -861,10 +869,10 @@
       </div>
       <div class="btn-row" style="margin-top:8px">
         <button class="btn" onclick="renderJichulbu()">🔄 최신 내용으로 새로고침</button>
-        <button class="btn accent" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent" onclick="saveHwpx('jichulbuPaperHost','지출부')">📝 한글(HWPX) 저장</button>
       </div>
-      <p class="hint">📌 지출액은 지출결의서의 <b>합계(공급가액+부가세+수수료)</b>를 기준으로 예산 소진액을 계산합니다. 일자는 결의서의 <b>지출부등기일</b>(비어 있으면 지출일 등)을 기준으로 정렬·월계 처리해요. 지출번호는 지출결의서의 증서번호(№)와 같습니다. 예산현액은 '본예산·추경·결산' 탭 이름 매칭으로 자동으로 채워지며, 아래에서 <b>직접 입력해 덮어쓸 수도</b> 있어요. (연중 추가경정에 따른 예산현액 변동은 반영하지 않음)</p>
+      <p class="hint">📌 지출액은 지출결의서의 <b>합계(공급가액+부가세+수수료)</b>를 기준으로 예산 소진액을 계산해요. 일자는 결의서의 <b>지출부등기일</b>(비어 있으면 지출일 등)을 기준으로 정렬·월계 처리해요. 지출번호는 지출결의서의 증서번호(№)와 같아요. 예산현액은 '본예산·추경·결산' 탭 이름 매칭으로 자동으로 채워지며, 아래에서 <b>직접 입력해 덮어쓸 수도</b> 있어요. (연중 추가경정에 따른 예산현액 변동은 반영하지 않음)</p>
     </div>
     <div class="card noprint" id="jichulbuBudgetCard" style="display:none">
       <h2>예산현액 입력</h2>
@@ -890,7 +898,7 @@
       </div>
       <div class="btn-row" style="margin-top:8px">
         <button class="btn" onclick="renderCashbook()">🔄 최신 내용으로 새로고침</button>
-        <button class="btn accent" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent" onclick="saveHwpx('cashbookPaperHost','현금출납부')">📝 한글(HWPX) 저장</button>
       </div>
       <p class="hint">📌 일자는 징수결의서의 <b>징수부등기일</b>, 지출결의서의 <b>지출부등기일</b>(비어 있으면 발의일 등)을 써요. 지출액은 지출부와 같이 <b>합계(공급가액+부가세+수수료)</b> 기준이고, 지출번호는 지출결의서 증서번호(№)와 같아요. 기간 시작을 정하면 그 전 거래는 맨 위 <b>전기이월</b> 한 줄로 합쳐져요.</p>
@@ -909,8 +917,8 @@
   <section class="panel" id="panel-board">
     <div class="board-toolbar noprint">
       <span class="t">🏛️ 이사회 — 명단·회의 서식 <span class="beta-badge">BETA</span></span>
-      <button class="btn ghost sm" onclick="downloadBoardJSON()">💾 저장(JSON)</button>
-      <button class="btn ghost sm" onclick="document.getElementById('boardJsonFile').click()">📂 불러오기</button>
+      <button class="btn ghost sm" onclick="downloadBoardJSON()">💾 작업 저장</button>
+      <button class="btn ghost sm" onclick="document.getElementById('boardJsonFile').click()">📂 작업 불러오기</button>
       <input type="file" id="boardJsonFile" accept=".json" hidden>
       <button class="btn ghost sm" onclick="copyBoardActiveText()">📋 텍스트 복사</button>
     </div>
@@ -933,10 +941,10 @@
           <div class="field"><label>법인명</label><input type="text" id="bdCorp" value="학교법인 ○○학원" style="width:220px"></div>
         </div>
         <div class="btn-row" style="margin-bottom:10px">
-          <button class="btn accent" onclick="downloadBoardMemberTemplate()">⬇ 엑셀 템플릿 다운로드</button>
-          <button class="btn ghost" onclick="document.getElementById('boardMemberFile').click()">📂 엑셀 업로드</button>
+          <button class="btn accent" onclick="downloadBoardMemberTemplate()">⬇ 양식 받기</button>
+          <button class="btn ghost" onclick="document.getElementById('boardMemberFile').click()">⬆ 엑셀 올리기</button>
           <input type="file" id="boardMemberFile" accept=".xlsx,.xls" hidden>
-          <span class="hint" style="margin:0">"정보" 시트(법인명)와 "이사회명단" 시트(직위·성명·연령·임기·유형·주요경력·친족여부·비고) 2개로 구성돼요. 작성 후 올리면 명단 전체가 교체됩니다.</span>
+          <span class="hint" style="margin:0">"정보" 시트(법인명)와 "이사회명단" 시트(직위·성명·연령·임기·유형·주요경력·친족여부·비고) 2개로 구성돼요. 작성 후 올리면 명단 전체가 교체돼요.</span>
         </div>
         <p class="hint" id="boardMemberUploadMsg"></p>
         <div class="tbl-wrap">
@@ -954,7 +962,7 @@
     <div id="boardMemberPreviewArea">
       <div class="doc-toolbar">
         <span class="t">📄 임원 현황 미리보기 · A4 세로</span>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('boardMemberPaperHost','임원현황')">📝 한글(HWPX) 저장</button>
         <button class="btn sm" onclick="closeBoardMemberPreview()">← 입력으로 돌아가기</button>
       </div>
@@ -968,10 +976,10 @@
         <p class="desc">사립학교법 제18조의2에 따른 필수 기재사항(소집통지일·이사정수·재적이사·참석/결석·안건·의결·회의내용·작성자 등)을 여기서 한 번 작성하면, 왼쪽 메뉴의 개최통보·회의록 표지·참석자명부·회의록 4개 문서에 자동으로 반영돼요.</p>
         <div class="btn-row" style="margin-bottom:10px">
           <button class="btn" onclick="addBoardMeeting()">+ 회의 추가</button>
-          <button class="btn accent" onclick="downloadBoardMeetingTemplate()">⬇ 엑셀 템플릿 다운로드</button>
-          <button class="btn ghost" onclick="document.getElementById('boardMeetingFile').click()">📂 엑셀 업로드</button>
+          <button class="btn accent" onclick="downloadBoardMeetingTemplate()">⬇ 양식 받기</button>
+          <button class="btn ghost" onclick="document.getElementById('boardMeetingFile').click()">⬆ 엑셀 올리기</button>
           <input type="file" id="boardMeetingFile" accept=".xlsx,.xls" hidden>
-          <span class="hint" style="margin:0">"회의정보" 시트(회차별 1행)와 "안건" 시트(회차+안건별 1행) 2개로 구성돼요. 작성 후 올리면 회의록 전체가 교체됩니다.</span>
+          <span class="hint" style="margin:0">"회의정보" 시트(회차별 1행)와 "안건" 시트(회차+안건별 1행) 2개로 구성돼요. 작성 후 올리면 회의록 전체가 교체돼요.</span>
         </div>
         <p class="hint" id="boardMeetingUploadMsg"></p>
         <div id="boardMeetingCards"></div>
@@ -981,7 +989,7 @@
     <div class="subpanel" id="panel-boardnotice">
       <div class="doc-toolbar">
         <span class="t">📨 이사회 개최 통보 공문 · A4 세로</span>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('boardNoticeHost','이사회_개최통보')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
@@ -993,7 +1001,7 @@
     <div class="subpanel" id="panel-boardcover">
       <div class="doc-toolbar">
         <span class="t">📑 이사회 회의록 표지 · A4 세로</span>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('boardCoverHost','이사회_회의록표지')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
@@ -1006,7 +1014,7 @@
       <div class="doc-toolbar">
         <span class="t">📋 이사회 참석자명부(방명록) · A4 세로</span>
         <label><input type="checkbox" id="bdAnonRoster" onchange="toggleBoardAnon(this.checked)"> 🔒 홈페이지 공개용(이름 익명화)</label>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('boardRosterHost','이사회_참석자명부')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
@@ -1019,7 +1027,7 @@
       <div class="doc-toolbar">
         <span class="t">📝 이사회 회의록 · A4 세로</span>
         <label><input type="checkbox" id="bdAnonMinutes" onchange="toggleBoardAnon(this.checked)"> 🔒 홈페이지 공개용(이름 익명화)</label>
-        <button class="btn accent sm" onclick="window.print()">🖨 PDF로 저장 / 인쇄</button>
+        <button class="btn accent sm" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
         <button class="btn accent sm" onclick="saveHwpx('boardMinutesHost','이사회_회의록')">📝 한글(HWPX) 저장</button>
       </div>
       <div class="doc-guide noprint"><b class="gt">📌 작성 안내 (이 안내는 인쇄되지 않아요)</b><ul>
@@ -1049,12 +1057,18 @@ const AUTOSAVE_KEY='lawAcctTool_autosave_v3'; // v2→v3: 세션 중 테스트�
 const AUTOSAVE_META_IDS=['docKind','fiscalYear','trYear','trCorp','bdCorp','revYear','revCorp','jsbYear','jsbCorp','expYear','expCorp','jcbYear','jcbCorp','cbYear','cbCorp','cbFrom','cbTo','cbRows'];
 let __savedState=null;
 try{const raw=localStorage.getItem(AUTOSAVE_KEY);if(raw)__savedState=JSON.parse(raw);}catch(e){__savedState=null;}
+/* 개인정보(주민번호·계좌번호)는 브라우저 자동 저장에서 뺌 (2026-11-23). 예전에 저장된 값도 열 때 지움 */
+const PRIVATE_FIELDS=['supRrn','supAccount'];
+function stripPrivate(list){return Array.isArray(list)?list.map(r=>{const o=Object.assign({},r);PRIVATE_FIELDS.forEach(k=>{if(k in o)o[k]='';});return o;}):list;}
+try{if(__savedState&&Array.isArray(__savedState.expenseList)&&__savedState.expenseList.some(r=>PRIVATE_FIELDS.some(k=>r&&r[k]))){
+  __savedState.expenseList=stripPrivate(__savedState.expenseList);localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(__savedState));}}catch(e){}
 let __saveTimer=null;
 function saveState(){
   try{
     const meta={};
     AUTOSAVE_META_IDS.forEach(id=>{const el=document.getElementById(id);if(el)meta[id]=el.value;});
-    const state={seip,sechul,revenueList,expenseList,jingsubuBudgetOverride,jichulbuBudgetOverride,boardMembers,boardMeetings,auditReport,meta};
+    const state={seip,sechul,revenueList,expenseList:stripPrivate(expenseList),jingsubuBudgetOverride,jichulbuBudgetOverride,boardMembers,boardMeetings,auditReport,meta,
+      transfer:(typeof transferState==='function'?transferState():undefined),formsState:(typeof formsState!=='undefined'?formsState:undefined)};
     localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(state));
   }catch(e){/* 저장 실패해도 기능엔 지장 없음(용량초과 등) */}
 }
@@ -1177,17 +1191,34 @@ const won=n=>(isNaN(n)?0:Math.round(n)).toLocaleString('ko-KR');
 const parseNum=s=>{if(typeof s==='number')return s;const v=parseFloat(String(s).replace(/[^0-9.\-]/g,''));return isNaN(v)?0:v;};
 
 /* ===== 산출식: 한 줄 계산 ===== */
-function evalLine(line){
-  let s=line.trim();
-  if(!s)return null;
-  if(/^[\s◦•∙·▶◎○]*합\s*계/.test(s))return null;   // 합계 줄 제외
+/* evalLineInfo: {v:금액|null, warn:경고문|null, memo:글자만 있는 줄} — 2026-11-23 이름 앞 숫자(1인당·3개월분) 오계산 수정, 경고 표시 */
+function evalLine(line){return evalLineInfo(line).v;}
+function evalLineInfo(line){
+  let s=String(line||'').trim();
+  if(!s||/^[\s◦•∙·▶◎○]*합\s*계/.test(s))return{v:null,warn:null,memo:true};   // 빈 줄·합계 줄 제외
+  const hasDigit=/\d/.test(s);
+  const unitWarn=/\d\s*(만|천|억)\s*원/.test(s)?'만·천·억 대신 숫자로 써 주세요 (예: 50만원 → 500,000원)':null;
+  const done=(raw)=>{
+    if(raw===null||!isFinite(raw))return{v:null,warn:hasDigit?'계산 안 된 줄':null,memo:!hasDigit};
+    const v=Math.round(raw);let warn=unitWarn||extraWarn;
+    if(!warn&&Math.abs(raw-v)>1e-6)warn='소수점은 반올림했어요';
+    if(!warn&&v<=0)warn='0원 이하예요';
+    return{v,warn,memo:false};
+  };
+  let extraWarn=null;
   if(s.includes('=')){
     const parts=s.split('=');
     const right=parts[parts.length-1].replace(/[^0-9.]/g,'');
-    if(right){const v=parseFloat(right);if(isFinite(v))return Math.round(v);}
+    if(right){const v=parseFloat(right);if(isFinite(v))return done(v);}
     s=parts[0];
   }
   let e=s.replace(/[◦•∙·▶◎○]/g,'').replace(/,/g,'').replace(/[×xX]/g,'*').replace(/÷/g,'/');
+  // 괄호 안 설명 제거 ("50,000원×8명(1인당)") — 연산 기호가 없는 괄호만
+  e=e.replace(/([\d가-힣A-Za-z])\s*\(([^()+\-*/]*)\)/g,'$1');
+  // 이름에 붙은 숫자 제거 ("1인당 50,000원", "3개월분 300,000원", "2026년 행사 500,000원") — 연산 기호 없이 뒤에 다른 숫자가 오는 경우
+  e=e.replace(/(^|[^\d.])([\d.]+)\s*([가-힣]+)[^\d+\-*/()%]*?(?=\d)/g,(all,pre,num,suf)=>{
+    if(pre!=="제"&&/^(명|회|개|건|식|대|권|매|부|박|일|시간|주|인)$/.test(suf))extraWarn='숫자 사이에 ×가 빠졌는지 확인해 주세요';
+    return pre+' ';});
   e=e.replace(/([0-9.]+)\s*%/g,'($1*0.01)');
   e=e.replace(/([0-9.\)])\s*[가-힣A-Za-z]+/g,'$1');
   // 연산자 뒤에 붙은 이름 제거 ("법인세 6471000원+ 지방주민세 647000원")
@@ -1197,17 +1228,26 @@ function evalLine(line){
   if(!/^[\d.+\-*/()]+$/.test(e)||!/\d/.test(e)){
     // "=" 없이 "이름 700000원"처럼 쓴 줄 — 줄 끝의 "숫자원"만 뽑아서 금액으로 인정(앞 이름 텍스트는 무시)
     const m=s.match(/([\d,]+(?:\.\d+)?)\s*원\s*$/);
-    if(m){const v=parseFloat(m[1].replace(/,/g,''));if(isFinite(v))return Math.round(v);}
-    return null;
+    if(m){const v=parseFloat(m[1].replace(/,/g,''));if(isFinite(v))return done(v);}
+    return done(null);
   }
-  try{const r=Function('"use strict";return('+e+')')();return isFinite(r)?Math.round(r):null;}catch(_){return null;}
+  try{const r=Function('"use strict";return('+e+')')();return done(isFinite(r)?r:null);}catch(_){return done(null);}
 }
 /* 여러 줄 합계 */
-function evalMulti(text){
-  if(!text||!text.trim())return null;
+function evalMulti(text){return evalMultiInfo(text).sum;}
+/* 산출기초 칸 밑 표시: 합계 + ⚠ 줄별 경고 */
+function calcOutHtml(ci){
+  let h=ci.sum!==null?`<div class="calc-out">= 합계 ${won(ci.sum)}원</div>`:'';
+  if(ci.warns.length)h+=`<div class="calc-warn">${ci.warns.map(w=>`⚠ ${w.n}번째 줄: ${esc(w.msg)}`).join('<br>')}</div>`;
+  return h;
+}
+/* 여러 줄 합계 + 줄별 경고 [{n:줄번호, msg}] */
+function evalMultiInfo(text){
+  const warns=[];
+  if(!text||!text.trim())return{sum:null,warns};
   let sum=0,found=false;
-  text.split(/\n/).forEach(l=>{const r=evalLine(l);if(r!==null){sum+=r;found=true;}});
-  return found?sum:null;
+  text.split(/\n/).forEach((l,i)=>{const r=evalLineInfo(l);if(r.v!==null){sum+=r.v;found=true;}if(r.warn)warns.push({n:i+1,msg:r.warn});});
+  return{sum:found?sum:null,warns};
 }
 
 function cols(){const k=document.getElementById('docKind').value;
@@ -1229,7 +1269,7 @@ function kindInfoText(){const k=document.getElementById('docKind').value;
     "· 파일이 없으면 표에서 <b>결산액</b>을 직접 입력하세요. (출력 순서: 최종예산액·결산액·비교증감)";}
 /* 업로드 칸 안내 — 결산은 '작성한 예산'이 아니라 '실제 사용액'을 올리므로 문서종류별로 문구를 바꿈 */
 function uploadGuideText(){const k=document.getElementById('docKind').value;
-  const step1="① 아래 <b>'⬇ 엑셀 템플릿 받기'</b>로 양식을 내려받아 엑셀에서 작성하세요. (세입·세출 시트 / 관·항·목·금액·산출기초)<br>"+
+  const step1="① 아래 <b>'⬇ 양식 받기'</b>로 양식을 내려받아 엑셀에서 작성하세요. (세입·세출 시트 / 관·항·목·금액·산출기초)<br>"+
     "② 작성한 파일을 아래 칸에 끌어다 놓거나 클릭해서 올리세요. (.xlsx)<br>"+
     "<span style='color:var(--bad);font-weight:700'>⚠ 금액은 반드시 원 단위로 적으세요.</span> 예) 150만원 → <b>1500000</b> (천원 단위 <s>1500</s> ✕)<br>"+
     "&nbsp;&nbsp;&nbsp;예산서·총괄표의 천원 표시는 출력할 때 자동으로 바꿔줘요.<br>";
@@ -1300,8 +1340,8 @@ function renderInput(kind){
       }
       tb.appendChild(htr);
       h.moks.forEach((m,mi)=>{
-        const mtr=document.createElement('tr');const co=m.calc?evalMulti(m.calc):null;
-        const calcTd=`<td><textarea class="calc" rows="1" data-k="${kind}" data-t="calc" data-g="${gi}" data-h="${hi}" data-m="${mi}" placeholder="${esc(m.demo||'예:  70,000원×8명×4회  또는  개교기념 행사 =450,000원')}">${esc(m.calc||'')}</textarea>${co!==null?`<div class="calc-out">= 합계 ${won(co)}원</div>`:''}</td>`;
+        const mtr=document.createElement('tr');const ci=evalMultiInfo(m.calc||'');
+        const calcTd=`<td><textarea class="calc${ci.warns.length?' calc-has-warn':''}" rows="1" data-k="${kind}" data-t="calc" data-g="${gi}" data-h="${hi}" data-m="${mi}" placeholder="${esc(m.demo||'예:  70,000원×8명×4회  또는  개교기념 행사 =450,000원')}">${esc(m.calc||'')}</textarea>${calcOutHtml(ci)}</td>`;
         if(showCompare){
           const mB=findMokAmt(prevTree,g.name,h.name,m.name)||0;
           const mA=m.amt||0;
@@ -1408,16 +1448,14 @@ function bindInput(kind){
       else if(d.t==='calc'){
         const m=data[d.g].hangs[d.h].moks[d.m];m.calc=e.target.value;
         e.target.style.height='auto';e.target.style.height=e.target.scrollHeight+'px';
-        const r=evalMulti(e.target.value);
-        m.amt=r||0;
+        const ci=evalMultiInfo(e.target.value),r=ci.sum;
+        if(r!==null)m.amt=r;   // 계산 안 되는 메모만 있으면 이미 입력한 금액은 그대로 둠
         // 금액칸/합계표시만 갱신 (포커스 유지)
         const amtEl=document.querySelector(`input[data-k="${kind}"][data-t="amt"][data-g="${d.g}"][data-h="${d.h}"][data-m="${d.m}"]`);
         if(amtEl&&document.activeElement!==amtEl)amtEl.value=m.amt?won(m.amt):'';
-        let out=e.target.parentElement.querySelector('.calc-out');
-        if(r!==null){
-          if(!out){out=document.createElement('div');out.className='calc-out';e.target.parentElement.appendChild(out);}
-          out.textContent='= 합계 '+won(r)+'원';
-        }else if(out){out.remove();}
+        e.target.classList.toggle('calc-has-warn',ci.warns.length>0);
+        e.target.parentElement.querySelectorAll('.calc-out,.calc-warn').forEach(x=>x.remove());
+        e.target.insertAdjacentHTML('afterend',calcOutHtml(ci));
         liveTotals(kind);
       }
     });
@@ -1502,7 +1540,7 @@ function recalc(){
   const bal=st-ct;document.getElementById('sumBal').textContent=won(bal);
   const box=document.getElementById('balBox'),msg=document.getElementById('balMsg');box.classList.remove('ok','no');
   if(st===0&&ct===0){msg.className='balance-msg';return;}
-  if(bal===0){box.classList.add('ok');msg.className='balance-msg ok';msg.textContent='✔ 세입과 세출이 일치합니다.';}
+  if(bal===0){box.classList.add('ok');msg.className='balance-msg ok';msg.textContent='✔ 세입과 세출이 일치해요.';}
   else{box.classList.add('no');msg.className='balance-msg no';msg.textContent=`✖ 세입·세출이 ${won(Math.abs(bal))}원 차이납니다. (${bal>0?'세입 초과':'세출 초과'})`;}
 }
 
@@ -1628,6 +1666,38 @@ function rowsToTree(rows){const tree=[];const gmap={};let lastGn='',lastHn='';
       dup.amt=(dup.amt||0)+val;dup.calc=[prevPiece,piece].filter(s=>s&&s.trim()).join('\n');return;}
     h.moks.push({name:mn,amt:val,calc:calc});});
   return tree;}
+/* ===== 엑셀 열 이름 인식 공용 (2026-11-23) =====
+   첫 줄(위 6줄 안) 열 이름으로 칸을 찾아, 예전 양식과 같은 열 순서의 배열로 바꿔 줌.
+   열 이름을 못 찾으면(예전·이름 없는 파일) 예전처럼 열 순서대로 읽음 */
+const normHead=s=>String(s==null?'':s).replace(/\([^)]*\)|\[[^\]]*\]/g,'').replace(/[\s·ㆍ.,\-_/:]/g,'').toLowerCase();
+function findHeaderMap(rows,spec,maxScan){
+  let best={row:-1,map:{},hits:0};
+  const lim=Math.min(maxScan||6,rows.length);
+  for(let r=0;r<lim;r++){
+    const row=rows[r]||[];const map={},used=new Set();let hits=0;
+    const heads=row.map(normHead);
+    spec.forEach(sp=>{const al=sp.alias.map(normHead);
+      let idx=heads.findIndex((h,ci)=>h&&!used.has(ci)&&al.includes(h));
+      if(idx<0)idx=heads.findIndex((h,ci)=>h&&!used.has(ci)&&al.some(a=>a.length>=2&&h.startsWith(a)));
+      if(idx>=0){map[sp.key]=idx;used.add(idx);hits++;}});
+    if(hits>best.hits)best={row:r,map,hits};
+  }
+  return best;
+}
+function remapRows(rows,spec,minHits){
+  const hm=findHeaderMap(rows,spec);
+  if(hm.hits<minHits)return rows.slice(1);   // 열 이름을 못 찾음 → 예전처럼 순서대로
+  return rows.slice(hm.row+1).map(r=>spec.map(sp=>hm.map[sp.key]!=null?(r[hm.map[sp.key]]??""):""));
+}
+/* 시트 찾기: 정확한 이름 → 이름에 단어가 들어간 시트(반대 단어가 같이 있으면 제외) */
+function findSheet(wb,exact,word,notWord){
+  if(wb.Sheets[exact])return wb.Sheets[exact];
+  const n=wb.SheetNames.find(x=>x.includes(word)&&!(notWord&&x.includes(notWord)));
+  return n?wb.Sheets[n]:null;
+}
+const BUDGET_SPEC=[{key:'gwan',alias:['관','관명']},{key:'hang',alias:['항','항명']},{key:'mok',alias:['목','목명','과목','과목명']},
+  {key:'amt',alias:['금액','예산액','금액원','결산액','추가경정예산액','경정예산액','집행액','본예산액','예산']},
+  {key:'calc',alias:['산출기초','산출근거','산출내역']}];
 /* 전(직전)/이번 예산 엑셀·JSON 공용 읽기: .json(저장한 작성내용)이든 .xlsx(세입·세출 엑셀 템플릿)이든 같은 방식으로 {seip,sechul} 추출 */
 function readBudgetFile(file,onOk,onErr){
   const isExcel=/\.(xlsx|xls)$/i.test(file.name);
@@ -1635,8 +1705,20 @@ function readBudgetFile(file,onOk,onErr){
   if(isExcel){
     rd.onload=ev=>{try{
       const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-      const rd2=nm=>{const ws=wb.Sheets[nm];if(!ws)return null;const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});return rowsToTree(rows.slice(1));};
-      const s=rd2("세입"),c=rd2("세출");
+      const toRows=ws=>XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      const wsS=findSheet(wb,"세입","세입","세출"),wsC=findSheet(wb,"세출","세출","세입");
+      let s=wsS?rowsToTree(remapRows(toRows(wsS),BUDGET_SPEC,3)):null,c=wsC?rowsToTree(remapRows(toRows(wsC),BUDGET_SPEC,3)):null;
+      if(!s&&!c&&wb.SheetNames.length===1){
+        // 시트가 하나뿐이면 '구분'(세입/세출) 열로 나눔
+        const rows=toRows(wb.Sheets[wb.SheetNames[0]]);
+        const spec=[...BUDGET_SPEC,{key:'gubun',alias:['구분','세입세출','회계구분']}];
+        const hm=findHeaderMap(rows,spec);
+        if(hm.hits>=3&&hm.map.gubun!=null){
+          const data=remapRows(rows,spec,3);
+          s=rowsToTree(data.filter(r=>String(r[5]).includes('세입')));
+          c=rowsToTree(data.filter(r=>String(r[5]).includes('세출')));
+        }else{onErr("⚠ 세입·세출을 나눌 수 없어요. 시트 이름을 '세입'·'세출'로 하거나, '구분' 열에 세입/세출을 적어 주세요.");return;}
+      }
       if(!s&&!c){onErr("⚠ '세입'/'세출' 시트를 찾을 수 없어요.");return;}
       onOk({seip:s||[],sechul:c||[]});
     }catch(err){onErr("⚠ 파일 오류: "+err.message);}};
@@ -1647,9 +1729,13 @@ function readBudgetFile(file,onOk,onErr){
     rd.readAsText(file);
   }
 }
+const treeHasInput=t=>(t||[]).some(g=>(g.hangs||[]).some(h=>(h.moks||[]).some(m=>m.amt||(m.calc&&m.calc.trim()))));
 document.getElementById('loadPrevBudget').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
   const msg=document.getElementById('loadPrevMsg');
+  e.target.value='';
   readBudgetFile(f,obj=>{
+    if(prevData&&(treeHasInput(prevData.seip)||treeHasInput(prevData.sechul))&&!confirm('지금 기준 예산을 파일 내용으로 바꿀까요?')){
+      msg.textContent='불러오기를 취소했어요. 지금 내용은 그대로예요.';msg.style.color='var(--sub)';return;}
     prevData={seip:obj.seip,sechul:obj.sechul};
     renderInput('seip');renderInput('sechul');
     msg.textContent="✔ 전(직전) 예산을 불러왔어요.";msg.style.color='var(--good)';
@@ -1673,7 +1759,10 @@ function mergeBudgetTree(current,incoming){
 }
 document.getElementById('loadThisBudget').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
   const msg=document.getElementById('loadThisMsg');
+  e.target.value='';
   readBudgetFile(f,obj=>{
+    if((treeHasInput(seip)||treeHasInput(sechul))&&(treeHasInput(obj.seip)||treeHasInput(obj.sechul))&&!confirm('지금 내용을 파일 내용으로 바꿀까요?\n(파일에 있는 관·항·목만 바뀌고 나머지는 그대로예요)')){
+      msg.textContent='불러오기를 취소했어요. 지금 내용은 그대로예요.';msg.style.color='var(--sub)';return;}
     mergeBudgetTree(seip,obj.seip);
     mergeBudgetTree(sechul,obj.sechul);
     renderInput('seip');renderInput('sechul');
@@ -1953,6 +2042,8 @@ function uploadAuditFile(file){
     const ws=wb.Sheets['감사보고서']||wb.Sheets[wb.SheetNames[0]];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:"",raw:false}).slice(1);   // raw:false — 날짜 셀이 숫자(일련번호)로 오지 않게
     let n=0;
+    if(rows.some(r=>AUDIT_FIELDS.some(x=>x[1]===String(r[0]||'').trim()))&&AUDIT_FIELDS.some(x=>{const v=auditReport[x[0]],d=newAuditReport()[x[0]];return v&&v!==d;})
+      &&!confirm('지금 내용을 파일 내용으로 바꿀까요?')){msg.textContent='불러오기를 취소했어요. 지금 내용은 그대로예요.';msg.style.color='var(--sub)';return;}
     rows.forEach(r=>{const label=String(r[0]||'').trim();const f=AUDIT_FIELDS.find(x=>x[1]===label);
       if(f){auditReport[f[0]]=String(r[1]==null?'':r[1]);n++;}});
     if(!n){msg.textContent="⚠ '항목' 열에서 알아볼 수 있는 항목이 없어요. 템플릿을 받아서 '값' 열만 채워주세요.";msg.style.color='var(--bad)';return;}
@@ -2005,7 +2096,7 @@ function renderLegal(){
       <td class="del"><button class="del-btn" onclick="delLegalRow(${i})">×</button></td>`;
     tb.appendChild(tr);
   });
-  bindLegal();calcLegal();
+  bindLegal();calcLegal();scheduleSave();
 }
 function bindLegal(){
   document.querySelectorAll('#legalTable tbody input').forEach(inp=>{
@@ -2074,7 +2165,7 @@ function renderRate(){
   document.getElementById('rtHealth').textContent=won(comp.health);
   document.getElementById('rtAccident').textContent=won(comp.accident);
   document.getElementById('rtTotal').textContent=won(comp.tot);
-  bindRate();syncLegalToTransfer();
+  bindRate();syncLegalToTransfer();scheduleSave();
 }
 function bindRate(){
   document.querySelectorAll('#rateTable tbody input').forEach(inp=>{
@@ -2100,7 +2191,7 @@ function delRateRow(i){rateRows.splice(i,1);if(rateRows.length===0)rateRows.push
 document.querySelector('.mode-toggle[data-group="legal"]').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   legalMode=b.dataset.mode;
-  syncLegalToTransfer();
+  syncLegalToTransfer();scheduleSave();
 });
 
 function syncLegalToTransfer(){
@@ -2124,7 +2215,7 @@ function renderTransfer(){
       <td class="del">${r.auto?'':`<button class="del-btn" onclick="delTransferRow(${i})">×</button>`}</td>`;
     tb.appendChild(tr);
   });
-  bindTransfer();calcTransfer();
+  bindTransfer();calcTransfer();scheduleSave();
 }
 function bindTransfer(){
   document.querySelectorAll('#transferTable tbody input').forEach(inp=>{
@@ -2161,13 +2252,62 @@ function calcCheck(){
   document.getElementById('chkGap').textContent=won(Math.max(gap,0));
   const box=document.getElementById('chkBox'),msg=document.getElementById('chkMsg');box.classList.remove('ok','no');
   if(legal===0){msg.className='balance-msg';return;}
-  if(gap<=0){box.classList.add('ok');msg.className='balance-msg ok';msg.textContent='✔ 법정부담경비를 전액 전출했습니다. 다른 목적의 전출금 편성이 가능합니다.';}
-  else{box.classList.add('no');msg.className='balance-msg no';msg.textContent=`✖ 법정부담경비 전출이 ${won(gap)}원 부족합니다. 부족 시 전출금 중 학교운영비·시설비·교육청대응투자비·기타전출금(다른 목적의 목)을 편성할 수 없습니다.`;}
+  if(gap<=0){box.classList.add('ok');msg.className='balance-msg ok';msg.textContent='✔ 법정부담경비를 전액 전출했어요. 다른 목적의 전출금 편성이 가능해요.';}
+  else{box.classList.add('no');msg.className='balance-msg no';msg.textContent=`✖ 법정부담경비 전출이 ${won(gap)}원 부족해요. 부족 시 전출금 중 학교운영비·시설비·교육청대응투자비·기타전출금(다른 목적의 목)을 편성할 수 없어요.`;}
 }
 
 renderLegal();
 renderRate();
 renderTransfer();
+/* 법인전입금 저장·복원 (2026-11-23) — 자동 저장 + 💾 작업 저장 파일 */
+const TR_RATE_IDS=['salaryUnit','rPension','rHealth','rCare','rAccident'];
+function transferState(){
+  const rates={};TR_RATE_IDS.forEach(id=>{const el=document.getElementById(id);if(el)rates[id]=el.value;});
+  return{legalMode,legalRows,rateRows,transferRows,rates,
+    trYear:document.getElementById('trYear').value,trCorp:document.getElementById('trCorp').value};
+}
+function applyTransferState(t){
+  if(!t)return false;
+  const okArr=a=>Array.isArray(a)&&a.length;
+  if(okArr(t.legalRows))legalRows=t.legalRows;
+  if(okArr(t.rateRows))rateRows=t.rateRows;
+  if(okArr(t.transferRows)){transferRows=t.transferRows;
+    if(!transferRows.some(r=>r.auto))transferRows.splice(1,0,{type:"법정부담전입금",plan:0,done:0,note:"①에서 자동",auto:true});}
+  if(t.rates)TR_RATE_IDS.forEach(id=>{const el=document.getElementById(id);if(el&&t.rates[id]!=null)el.value=t.rates[id];});
+  if(t.trYear!=null)document.getElementById('trYear').value=t.trYear;
+  if(t.trCorp!=null)document.getElementById('trCorp').value=t.trCorp;
+  const mb=document.querySelector(`.mode-toggle[data-group="legal"] [data-mode="${t.legalMode==='rate'?'rate':'direct'}"]`);
+  if(mb)mb.click();   // 화면 전환 + legalMode 설정
+  renderLegal();renderRate();renderTransfer();
+  return true;
+}
+if(__savedState&&__savedState.transfer)applyTransferState(__savedState.transfer);
+function hasTransferInput(){
+  return legalRows.some(r=>r.school||r.pension||r.health||r.accident)||rateRows.some(r=>r.school||r.base)||transferRows.some(r=>(!r.auto&&r.plan)||r.done);
+}
+function downloadTransferJSON(){
+  const data={kind:'법인전입금',version:1,transfer:transferState()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const yr=document.getElementById('trYear').value||'';
+  a.download=`${yr?yr+'_':''}법인전입금_작업.json`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function handleTransferJSONFile(file){
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      const t=data.transfer||data;
+      if(!t.legalRows&&!t.rateRows&&!t.transferRows){alert('법인전입금 작업 파일이 아니에요.');return;}
+      if(hasTransferInput()&&!confirm('지금 내용을 파일 내용으로 바꿀까요?'))return;
+      applyTransferState(t);saveState();
+      alert('법인전입금 작업을 불러왔어요.');
+    }catch(e){alert('불러오기 실패: '+e.message);}
+  };
+  rd.readAsText(file);
+}
+document.getElementById('transferJsonFile').addEventListener('change',e=>{if(e.target.files[0])handleTransferJSONFile(e.target.files[0]);e.target.value='';});
 
 /* --- ④ 의무전출액 계산 (지침 Ⅱ-5·6, 설립·운영 규정 시행규칙 제10조) --- */
 /* 예산 트리에서 관/항/목 이름으로 금액 합산(이름은 normName 비교). hn·mn 생략 시 상위 전체 */
@@ -2298,6 +2438,9 @@ FORMS.sort((a,b)=>parseInt(a.id.slice(1),10)-parseInt(b.id.slice(1),10));
 let formsState={};  // {id:{on:bool, rows:[[...]]}}
 const blankFormRows=f=>f.init?f.init.map(r=>f.cols.map((c,ci)=>r[ci]||'')):[Array(f.cols.length).fill('')];
 FORMS.forEach(f=>{formsState[f.id]={on:false, rows:blankFormRows(f)};});
+/* 자동 저장본 복원(2026-11-23) — 열 수가 같은 서식만 */
+if(__savedState&&__savedState.formsState)FORMS.forEach(f=>{const v=__savedState.formsState[f.id];
+  if(v&&Array.isArray(v.rows)&&v.rows.length&&v.rows.every(r=>Array.isArray(r)&&r.length===f.cols.length))formsState[f.id]={on:!!v.on,rows:v.rows};});
 
 /* 지침 원문의 서식 번호 체계: 1~12번은 예산 관련 서식, 13번 이후는 결산 관련 서식 */
 function isBudgetForm(id){return parseInt(id.slice(1),10)<=12;}
@@ -2315,7 +2458,7 @@ function renderFormsList(){
     section('📋 결산 관련 서식','결산 작성 시 제출하는 부속서류예요.');
     FORMS.filter(f=>!isBudgetForm(f.id)).forEach(f=>renderFormCard(host,f));
   }
-  bindForms();
+  bindForms();scheduleSave();
 }
 function renderFormCard(host,f){
     const st=formsState[f.id];
@@ -2440,22 +2583,36 @@ function handleFormsFile(file){
   const msg=document.getElementById('formsUploadMsg');const rd=new FileReader();
   rd.onload=ev=>{try{
     const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-    let loaded=0;
-    FORMS.forEach(f=>{
-      const sn=formSheetName(f);
-      const ws=wb.Sheets[sn];if(!ws)return;
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-      // 1행=제목, 2행=헤더, 3행~=데이터
-      const data=rows.slice(2).map(r=>f.cols.map((c,ci)=>r[ci]!=null?String(r[ci]):'')).filter(r=>r.some(c=>c.trim()));
-      if(data.length){formsState[f.id].rows=data;formsState[f.id].on=true;loaded++;}
-    });
+    const toRows=ws=>XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+    const specOf=f=>f.cols.map((c,ci)=>({key:'c'+ci,alias:[c]}));
+    /* 1행=제목, 2행=헤더, 3행~=데이터(예전 양식). 열 이름을 찾으면 열 순서가 달라도 맞춰 넣음 */
+    const readForm=(f,rows)=>{
+      const hm=findHeaderMap(rows,specOf(f));
+      const body=hm.hits>=Math.min(2,f.cols.length)?rows.slice(hm.row+1).map(r=>f.cols.map((c,ci)=>hm.map['c'+ci]!=null?r[hm.map['c'+ci]]:'')):rows.slice(2);
+      return body.map(r=>f.cols.map((c,ci)=>r[ci]!=null?String(r[ci]):'')).filter(r=>r.some(c=>c.trim()));
+    };
+    const found=[];
+    FORMS.forEach(f=>{const ws=wb.Sheets[formSheetName(f)];if(ws)found.push([f,readForm(f,toRows(ws))]);});
+    if(!found.length&&wb.SheetNames.length===1){
+      // 시트가 하나면 이름과 상관없이 — 열 이름이 가장 많이 맞는 서식으로
+      const rows=toRows(wb.Sheets[wb.SheetNames[0]]);
+      let best=null,bh=1;
+      FORMS.forEach(f=>{const h=findHeaderMap(rows,specOf(f)).hits;if(h>bh){bh=h;best=f;}});
+      if(best)found.push([best,readForm(best,rows)]);
+    }
+    const toLoad=found.filter(([f,data])=>data.length);
+    const hasForm=id=>formsState[id].rows.some(r=>r.some(c=>String(c).trim()));
+    if(toLoad.some(([f])=>hasForm(f.id))&&!confirm('지금 내용을 파일 내용으로 바꿀까요?')){
+      msg.textContent='불러오기를 취소했어요. 지금 내용은 그대로예요.';msg.style.color='var(--sub)';return;}
+    toLoad.forEach(([f,data])=>{formsState[f.id].rows=data;formsState[f.id].on=true;});
+    const loaded=toLoad.length;
     renderFormsList();
     msg.textContent=loaded?`✔ ${loaded}개 서식을 불러왔어요.`:"⚠ 템플릿 시트를 찾지 못했어요. 이 도구에서 받은 템플릿인지 확인하세요.";
     msg.style.color=loaded?'var(--good)':'var(--bad)';
   }catch(err){msg.textContent="⚠ 오류: "+err.message;msg.style.color='var(--bad)';}};
   rd.readAsArrayBuffer(file);
 }
-document.getElementById('formsFile').addEventListener('change',e=>{if(e.target.files[0])handleFormsFile(e.target.files[0]);});
+document.getElementById('formsFile').addEventListener('change',e=>{if(e.target.files[0])handleFormsFile(e.target.files[0]);e.target.value='';});
 
 renderFormsList();
 
@@ -2622,59 +2779,90 @@ function downloadDealTemplate(){
   const d=new Date(),stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
   XLSX.writeFile(wb,`${yr?yr+'_':''}법인회계_징수지출_${stamp}.xlsx`);
 }
-function handleDealFile(file){
+/* 징수·지출 엑셀 열 이름 별칭 (2026-11-23) — 첫 줄 열 이름으로 칸을 찾음. 순서는 예전 양식 열 순서와 같음 */
+const REV_SPEC=[
+  {key:'gwan',alias:['관','관명']},{key:'hang',alias:['항','항명']},{key:'mok',alias:['목','목명','과목']},
+  {key:'amount',alias:['금액','징수액','징수금액','수입액','징수결정액']},
+  {key:'payer',alias:['납부자주소성명','납부자','납부자성명','납입자','납부자상호','성명상호']},
+  {key:'jeokyo',alias:['적요','내용']},
+  {key:'dBalui',alias:['발의일','발의일자','발의']},{key:'dGoji',alias:['고지서발행일','고지일','고지서발행일자','고지서발행']},
+  {key:'dNabgi',alias:['납입기한','납기','납부기한']},{key:'dJingsu',alias:['징수부등기일','징수부등기','징수일']},
+  {key:'gojiNo',alias:['고지서번호','고지번호']}];
+const EXP_SPEC=[
+  {key:'gwan',alias:['관','관명']},{key:'hang',alias:['항','항명']},{key:'mok',alias:['목','목명','과목']},
+  {key:'jeokyo',alias:['적요','내용']},
+  {key:'gongGeupGa',alias:['공급가액','공급가','금액','지출액']},{key:'buga',alias:['부가세','부가가치세']},{key:'susu',alias:['수수료']},
+  {key:'sodeok',alias:['소득세']},{key:'jumin',alias:['주민세','지방소득세']},{key:'gitaGongje',alias:['기타공제','기타공제액']},
+  {key:'dBalui',alias:['발의일','발의일자','발의']},{key:'dJichulWonin',alias:['지출원인행위등기일','지출원인행위일','지출원인행위']},
+  {key:'dNappum',alias:['납품일','납품일자']},{key:'dGeomsa',alias:['검사일','검수일','검사일자']},{key:'dCheonggu',alias:['청구일','청구일자']},
+  {key:'dJichul',alias:['지출일','지출일자','지급일']},{key:'dJichulBu',alias:['지출부등기일','지출부등기']},{key:'dMulpum',alias:['물품대장등기일','물품대장등기']},
+  {key:'supName',alias:['공급자상호성명','공급자','상호','상호성명','거래처','채권자']},{key:'supBizNo',alias:['사업자번호','사업자등록번호']},
+  {key:'supRrn',alias:['주민등록번호','주민번호']},{key:'supAddr',alias:['주소','공급자주소']},{key:'supAccount',alias:['계좌번호','계좌','입금계좌']},
+  {key:'yeongsuDate',alias:['영수일자','영수일']},{key:'yeongsuName',alias:['영수인성명','영수인']}];
+function hasRevenueInput(){return revenueList.some(r=>r.amount||r.mok||r.jeokyo||r.payer);}
+function hasExpenseInput(){return expenseList.some(r=>calcExpenseRow(r).hapgye||r.mok||r.jeokyo||r.supName);}
+/* hint: 'rev'|'exp' — 어느 탭에서 올렸는지(시트가 하나뿐이고 열 이름으로도 구분이 안 될 때 사용) */
+function handleDealFile(file,hint){
   const msgRev=document.getElementById('revenueUploadMsg');const msgExp=document.getElementById('expenseUploadMsg');
+  const show=(text,color)=>{if(msgRev){msgRev.textContent=text;msgRev.style.color=color;}if(msgExp){msgExp.textContent=text;msgExp.style.color=color;}};
   const rd=new FileReader();
   rd.onload=ev=>{
-    let revCount=null,expCount=null,err=null,infoSet=false;
+    let revRows=null,expRows=null,yr='',corp='';
     try{
       const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
       const wsInfo=wb.Sheets["정보"];
       if(wsInfo){
         const rows=XLSX.utils.sheet_to_json(wsInfo,{header:1,defval:""}).slice(1);
-        const yr=String((rows.find(r=>String(r[0]||'').trim()==='회계연도')||[])[1]||'').trim();
-        const corp=String((rows.find(r=>String(r[0]||'').trim()==='법인명')||[])[1]||'').trim();
-        if(yr){document.getElementById('revYear').value=yr;document.getElementById('expYear').value=yr;infoSet=true;}
-        if(corp){document.getElementById('revCorp').value=corp;document.getElementById('expCorp').value=corp;infoSet=true;}
+        yr=String((rows.find(r=>String(r[0]||'').trim()==='회계연도')||[])[1]||'').trim();
+        corp=String((rows.find(r=>String(r[0]||'').trim()==='법인명')||[])[1]||'').trim();
       }
-      const wsRev=wb.Sheets["징수결의서"];
-      if(wsRev){
-        const rows=XLSX.utils.sheet_to_json(wsRev,{header:1,defval:""}).slice(1).filter(r=>r.some(c=>String(c).trim()));
-        if(rows.length){
-          revenueList=rows.map(r=>({gwan:String(r[0]||""),hang:String(r[1]||""),mok:String(r[2]||""),amount:parseNum(r[3]),payer:String(r[4]||""),jeokyo:String(r[5]||""),dBalui:normDate(r[6]),dGoji:normDate(r[7]),dNabgi:normDate(r[8]),dJingsu:normDate(r[9]),gojiNo:String(r[10]||"")}));
-          renderRevenueCards();revCount=rows.length;
+      const toRows=ws=>XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      let wsRev=findSheet(wb,'징수결의서','징수'),wsExp=findSheet(wb,'지출결의서','지출');
+      if(!wsRev&&!wsExp){
+        // 시트 이름이 달라도 데이터 시트가 하나면 그 시트 사용 — 열 이름으로 징수/지출 판단
+        const names=wb.SheetNames.filter(n=>n!=='정보'&&n!=='현금출납부');
+        if(names.length===1){
+          const rows=toRows(wb.Sheets[names[0]]);
+          const rh=findHeaderMap(rows,REV_SPEC).hits,eh=findHeaderMap(rows,EXP_SPEC).hits;
+          const uniqRev=findHeaderMap(rows,REV_SPEC.filter(s=>['payer','dGoji','dNabgi','dJingsu','gojiNo'].includes(s.key))).hits;
+          const uniqExp=findHeaderMap(rows,EXP_SPEC.filter(s=>['gongGeupGa','buga','sodeok','dJichul','supName','dGeomsa'].includes(s.key))).hits;
+          const isExp=uniqExp>uniqRev?true:uniqRev>uniqExp?false:(eh>rh?true:rh>eh?false:hint==='exp');
+          if(isExp)wsExp=wb.Sheets[names[0]];else wsRev=wb.Sheets[names[0]];
         }
       }
-      const wsExp=wb.Sheets["지출결의서"];
-      if(wsExp){
-        const rows=XLSX.utils.sheet_to_json(wsExp,{header:1,defval:""}).slice(1).filter(r=>r.some(c=>String(c).trim()));
-        if(rows.length){
-          expenseList=rows.map(r=>({gwan:String(r[0]||""),hang:String(r[1]||""),mok:String(r[2]||""),jeokyo:String(r[3]||""),
-            gongGeupGa:parseNum(r[4]),buga:parseNum(r[5]),susu:parseNum(r[6]),sodeok:parseNum(r[7]),jumin:parseNum(r[8]),gitaGongje:parseNum(r[9]),
-            dBalui:normDate(r[10]),dJichulWonin:normDate(r[11]),dNappum:normDate(r[12]),dGeomsa:normDate(r[13]),dCheonggu:normDate(r[14]),dJichul:normDate(r[15]),dJichulBu:normDate(r[16]),dMulpum:normDate(r[17]),
-            supName:String(r[18]||""),supBizNo:String(r[19]||""),supRrn:String(r[20]||""),supAddr:String(r[21]||""),supAccount:String(r[22]||""),
-            yeongsuDate:normDate(r[23]),yeongsuName:String(r[24]||"")}));
-          renderExpenseCards();expCount=rows.length;
-        }
-      }
-    }catch(e){err=e.message;}
-    let text,color;
-    if(err){text="⚠ 오류: "+err;color='var(--bad)';}
-    else if(revCount===null&&expCount===null&&!infoSet){text="⚠ '징수결의서'/'지출결의서' 시트를 찾을 수 없어요.";color='var(--bad)';}
-    else{
-      const parts=[];
-      if(revCount!==null)parts.push(`징수결의서 ${revCount}건`);
-      if(expCount!==null)parts.push(`지출결의서 ${expCount}건`);
-      if(infoSet)parts.push('회계연도·법인명');
-      text=`✔ ${parts.join(', ')} 불러오기 완료 (징수부·지출부·현금출납부도 자동 갱신)`;color='var(--good)';
+      if(wsRev)revRows=remapRows(toRows(wsRev),REV_SPEC,3).filter(r=>r.some(c=>String(c).trim()));
+      if(wsExp)expRows=remapRows(toRows(wsExp),EXP_SPEC,3).filter(r=>r.some(c=>String(c).trim()));
+    }catch(e){show("⚠ 오류: "+e.message,'var(--bad)');return;}
+    const willRev=revRows&&revRows.length,willExp=expRows&&expRows.length;
+    if(!willRev&&!willExp&&!yr&&!corp){
+      show(revRows||expRows?"⚠ 시트에 내용이 없어요.":"⚠ 징수결의서·지출결의서 시트를 찾지 못했어요.",'var(--bad)');return;}
+    if(((willRev&&hasRevenueInput())||(willExp&&hasExpenseInput()))&&!confirm('지금 내용을 파일 내용으로 바꿀까요?')){
+      show('불러오기를 취소했어요. 지금 내용은 그대로예요.','var(--sub)');return;}
+    if(yr){document.getElementById('revYear').value=yr;document.getElementById('expYear').value=yr;}
+    if(corp){document.getElementById('revCorp').value=corp;document.getElementById('expCorp').value=corp;}
+    const S=v=>String(v==null?'':v);
+    if(willRev){
+      revenueList=revRows.map(r=>({gwan:S(r[0]),hang:S(r[1]),mok:S(r[2]),amount:parseNum(r[3]),payer:S(r[4]),jeokyo:S(r[5]),dBalui:normDate(r[6]),dGoji:normDate(r[7]),dNabgi:normDate(r[8]),dJingsu:normDate(r[9]),gojiNo:S(r[10])}));
+      renderRevenueCards();
     }
-    if(msgRev){msgRev.textContent=text;msgRev.style.color=color;}
-    if(msgExp){msgExp.textContent=text;msgExp.style.color=color;}
+    if(willExp){
+      expenseList=expRows.map(r=>({gwan:S(r[0]),hang:S(r[1]),mok:S(r[2]),jeokyo:S(r[3]),
+        gongGeupGa:parseNum(r[4]),buga:parseNum(r[5]),susu:parseNum(r[6]),sodeok:parseNum(r[7]),jumin:parseNum(r[8]),gitaGongje:parseNum(r[9]),
+        dBalui:normDate(r[10]),dJichulWonin:normDate(r[11]),dNappum:normDate(r[12]),dGeomsa:normDate(r[13]),dCheonggu:normDate(r[14]),dJichul:normDate(r[15]),dJichulBu:normDate(r[16]),dMulpum:normDate(r[17]),
+        supName:S(r[18]),supBizNo:S(r[19]),supRrn:S(r[20]),supAddr:S(r[21]),supAccount:S(r[22]),
+        yeongsuDate:normDate(r[23]),yeongsuName:S(r[24])}));
+      renderExpenseCards();
+    }
+    const parts=[];
+    if(willRev)parts.push(`징수결의서 ${revRows.length}건`);
+    if(willExp)parts.push(`지출결의서 ${expRows.length}건`);
+    if(yr||corp)parts.push('회계연도·법인명');
+    show(`✔ ${parts.join(', ')} 불러오기 완료 (징수부·지출부·현금출납부도 자동 갱신)`,'var(--good)');
     renderJingsubu();renderJichulbu();renderCashbook();
   };
   rd.readAsArrayBuffer(file);
 }
-document.getElementById('revenueFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0]);e.target.value='';});
+document.getElementById('revenueFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0],'rev');e.target.value='';});
 renderRevenueCards();
 
 /* ================= 지출결의서 탭 ================= */
@@ -2734,6 +2922,7 @@ function renderExpenseCards(){
           <div class="field" style="flex:1;min-width:220px"><label>주소</label><input value="${esc(r.supAddr)}" data-i="${i}" data-f="supAddr"></div>
           <div class="field"><label>계좌번호</label><input value="${esc(r.supAccount)}" data-i="${i}" data-f="supAccount" style="width:190px"></div>
         </div>
+        <p class="hint" style="color:var(--sub);margin:-4px 0 8px">🔒 주민번호·계좌번호는 이 컴퓨터에 저장하지 않아요. (새로고침하면 비워져요)</p>
         <div class="form-line">
           <div class="field"><label>영수일자</label><input type="date" value="${r.yeongsuDate}" data-i="${i}" data-f="yeongsuDate"></div>
           <div class="field"><label>영수인 성명</label><input value="${esc(r.yeongsuName)}" data-i="${i}" data-f="yeongsuName" style="width:160px"></div>
@@ -2849,7 +3038,7 @@ function openExpensePreview(){
   document.getElementById('expensePreviewArea').classList.add('active');window.scrollTo(0,0);
 }
 function closeExpensePreview(){document.getElementById('expensePreviewArea').classList.remove('active');document.getElementById('expenseInput').style.display='block';}
-document.getElementById('expenseFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0]);e.target.value='';});
+document.getElementById('expenseFile').addEventListener('change',e=>{if(e.target.files[0])handleDealFile(e.target.files[0],'exp');e.target.value='';});
 renderExpenseCards();
 
 /* ================= 징수부(세입부) · 지출부(세출부) 탭 ================= */
@@ -2908,7 +3097,7 @@ function renderJingsubu(){
   const host=document.getElementById('jingsubuPaperHost');
   const rows=revenueList.map(r=>({...r,_date:r.dJingsu||r.dNabgi||r.dGoji||r.dBalui||''})).filter(r=>(r.amount||0)>0);
   document.getElementById('jingsubuBudgetCard').style.display=rows.length?'':'none';
-  if(!rows.length){host.innerHTML='<div class="placeholder"><div class="ic">📗</div>징수결의서에 금액이 입력된 건이 아직 없습니다. 먼저 징수결의서를 작성하세요.</div>';return;}
+  if(!rows.length){host.innerHTML='<div class="placeholder"><div class="ic">📗</div>징수결의서에 금액이 입력된 건이 아직 없어요. 먼저 징수결의서를 작성하세요.</div>';return;}
   const groups=groupByMok(rows);
   groups.forEach(g=>g.rows.sort((a,b)=>(a._date||'').localeCompare(b._date||'')));
   renderBudgetInputTable('jingsubuBudgetCard','jingsubuBudgetTable',groups,seip,jingsubuBudgetOverride,renderJingsubu);
@@ -2966,7 +3155,7 @@ function renderJichulbu(){
   const jichulNos=assignJichulNos(expenseList);
   const rows=expenseList.map((r,i)=>{const c=calcExpenseRow(r);return{...r,_no:jichulNos[i],_amt:c.hapgye,_date:jichulDateOf(r)};}).filter(r=>(r._amt||0)>0);
   document.getElementById('jichulbuBudgetCard').style.display=rows.length?'':'none';
-  if(!rows.length){host.innerHTML='<div class="placeholder"><div class="ic">📕</div>지출결의서에 금액이 입력된 건이 아직 없습니다. 먼저 지출결의서를 작성하세요.</div>';return;}
+  if(!rows.length){host.innerHTML='<div class="placeholder"><div class="ic">📕</div>지출결의서에 금액이 입력된 건이 아직 없어요. 먼저 지출결의서를 작성하세요.</div>';return;}
   const groups=groupByMok(rows);
   groups.forEach(g=>g.rows.sort((a,b)=>(a._date||'').localeCompare(b._date||'')));
   renderBudgetInputTable('jichulbuBudgetCard','jichulbuBudgetTable',groups,sechul,jichulbuBudgetOverride,renderJichulbu);
@@ -3061,7 +3250,7 @@ function renderCashbook(){
   const from=document.getElementById('cbFrom').value,to=document.getElementById('cbTo').value;
   const per=Math.max(10,Math.min(60,parseInt(document.getElementById('cbRows').value,10)||38));
   const {lines,count}=cashbookLines(from,to);
-  if(!count&&!lines.length){host.innerHTML='<div class="placeholder"><div class="ic">💵</div>징수결의서·지출결의서에 금액이 입력된 건이 아직 없습니다(또는 고른 기간에 거래가 없어요).</div>';scheduleSave();return;}
+  if(!count&&!lines.length){host.innerHTML='<div class="placeholder"><div class="ic">💵</div>징수결의서·지출결의서에 금액이 입력된 건이 아직 없어요(또는 고른 기간에 거래가 없어요).</div>';scheduleSave();return;}
   const w=v=>v?won(v):'';
   const H='style="height:6mm"';
   const lineHtml=l=>{
@@ -3180,6 +3369,15 @@ function downloadBoardMemberTemplate(){
   XLSX.utils.book_append_sheet(wb,ws,"이사회명단");
   XLSX.writeFile(wb,`이사회_명단_템플릿.xlsx`);
 }
+/* 이사회 엑셀 열 이름 별칭 (2026-11-23) — 순서는 예전 양식 열 순서 */
+const BOARD_MEMBER_SPEC=[{key:'type',alias:['직위','구분']},{key:'name',alias:['성명','이름']},{key:'age',alias:['연령','나이']},{key:'term',alias:['임기']},
+  {key:'category',alias:['유형']},{key:'career',alias:['주요경력','경력']},{key:'kinship',alias:['친족여부','친족']},{key:'note',alias:['비고']}];
+const BOARD_MEETING_SPEC=[['회차'],['학년도'],['회의소집통지일','소집통지일','통지일'],['회의일자','회의일','개최일'],['시작','시작시각','개회'],['종료','종료시각','폐회'],
+  ['회의장소','장소'],['이사정수'],['재적이사'],['참석이사'],['참석감사'],['결석이사'],['회의내용'],['폐회문구'],['간인위원'],['작성일'],['작성자'],['간사직함'],['간사성명']]
+  .map((a,i)=>({key:'m'+i,alias:a}));
+const BOARD_AGENDA_SPEC=[['회차'],['안건명','안건'],['동의자'],['재청자'],['찬성'],['반대'],['의결결과','결과']].map((a,i)=>({key:'a'+i,alias:a}));
+/* 엑셀 시간 셀(하루의 소수, 예 0.4167)을 HH:MM으로 */
+function normTime(v){if(typeof v==='number'&&v>=0&&v<1){const m=Math.round(v*1440);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}return String(v==null?'':v);}
 function handleBoardMemberFile(file){
   const msg=document.getElementById('boardMemberUploadMsg');const rd=new FileReader();
   rd.onload=ev=>{try{
@@ -3193,7 +3391,8 @@ function handleBoardMemberFile(file){
     }
     const ws=wb.Sheets['이사회명단']||wb.Sheets[wb.SheetNames[0]];
     if(!ws){msg.textContent="⚠ 시트를 찾을 수 없어요.";msg.style.color='var(--bad)';return;}
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""}).slice(1).filter(r=>r.some(c=>String(c).trim()));
+    const rows=remapRows(XLSX.utils.sheet_to_json(ws,{header:1,defval:""}),BOARD_MEMBER_SPEC,3).filter(r=>r.some(c=>String(c).trim()));
+    if(rows.length&&boardMembers.some(m=>m.name)&&!confirm('지금 내용을 파일 내용으로 바꿀까요?')){msg.textContent='불러오기를 취소했어요. 지금 내용은 그대로예요.';msg.style.color='var(--sub)';return;}
     const loaded=rows.map(r=>({type:String(r[0]||'이사').trim()||'이사',name:String(r[1]||''),age:String(r[2]||''),term:String(r[3]||''),category:String(r[4]||''),career:String(r[5]||''),kinship:String(r[6]||''),note:String(r[7]||'')}));
     boardMembers=loaded.length?loaded:[newBoardMember('이사')];
     renderBoardMembers();
@@ -3201,7 +3400,7 @@ function handleBoardMemberFile(file){
   }catch(err){msg.textContent="⚠ 오류: "+err.message;msg.style.color='var(--bad)';}};
   rd.readAsArrayBuffer(file);
 }
-document.getElementById('boardMemberFile').addEventListener('change',e=>{if(e.target.files[0])handleBoardMemberFile(e.target.files[0]);});
+document.getElementById('boardMemberFile').addEventListener('change',e=>{if(e.target.files[0])handleBoardMemberFile(e.target.files[0]);e.target.value='';});
 document.getElementById('boardMemberTable').addEventListener('input',e=>{
   const t=e.target;if(!t.dataset.f)return;boardMembers[+t.dataset.i][t.dataset.f]=t.value;scheduleSave();
 });
@@ -3309,19 +3508,20 @@ function handleBoardMeetingFile(file){
     const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
     const wsInfo=wb.Sheets['회의정보']||wb.Sheets[wb.SheetNames[0]];
     if(!wsInfo){msg.textContent="⚠ '회의정보' 시트를 찾을 수 없어요.";msg.style.color='var(--bad)';return;}
-    const infoRows=XLSX.utils.sheet_to_json(wsInfo,{header:1,defval:""}).slice(1).filter(r=>r.some(c=>String(c).trim()));
+    const infoRows=remapRows(XLSX.utils.sheet_to_json(wsInfo,{header:1,defval:""}),BOARD_MEETING_SPEC,3).filter(r=>r.some(c=>String(c).trim()));
+    if(infoRows.length&&boardMeetings.some(m=>m.date||m.round||m.attendNames)&&!confirm('지금 내용을 파일 내용으로 바꿀까요?')){msg.textContent='불러오기를 취소했어요. 지금 내용은 그대로예요.';msg.style.color='var(--sub)';return;}
     const loaded=infoRows.map(r=>{
       const mt=newBoardMeeting();
-      mt.round=String(r[0]||'');mt.schoolYear=String(r[1]||'');mt.noticeDate=String(r[2]||'');mt.date=String(r[3]||'');mt.timeFrom=String(r[4]||'');mt.timeTo=String(r[5]||'');
+      mt.round=String(r[0]||'');mt.schoolYear=String(r[1]||'');mt.noticeDate=r[2]?normDate(r[2]):'';mt.date=r[3]?normDate(r[3]):'';mt.timeFrom=r[4]?normTime(r[4]):'';mt.timeTo=r[5]?normTime(r[5]):'';
       mt.place=String(r[6]||mt.place);mt.capacity=String(r[7]||'');mt.onboard=String(r[8]||'');mt.attendNames=String(r[9]||'');mt.auditAttendNames=String(r[10]||'');
       mt.absentNames=String(r[11]||'');mt.flowText=String(r[12]||'');mt.closing=String(r[13]||'');mt.coSigners=String(r[14]||'');
-      mt.writeDate=String(r[15]||'');mt.recorder=String(r[16]||'');mt.secTitle=String(r[17]||mt.secTitle);mt.secName=String(r[18]||'');
+      mt.writeDate=r[15]?normDate(r[15]):'';mt.recorder=String(r[16]||'');mt.secTitle=String(r[17]||mt.secTitle);mt.secName=String(r[18]||'');
       mt.agendas=[];
       return mt;
     });
     const wsAg=wb.Sheets['안건'];
     if(wsAg){
-      const agRows=XLSX.utils.sheet_to_json(wsAg,{header:1,defval:""}).slice(1).filter(r=>r.some(c=>String(c).trim()));
+      const agRows=remapRows(XLSX.utils.sheet_to_json(wsAg,{header:1,defval:""}),BOARD_AGENDA_SPEC,3).filter(r=>r.some(c=>String(c).trim()));
       agRows.forEach(r=>{
         const round=String(r[0]||'');
         const mt=loaded.find(m=>m.round===round)||loaded[0];
@@ -3335,7 +3535,7 @@ function handleBoardMeetingFile(file){
   }catch(err){msg.textContent="⚠ 오류: "+err.message;msg.style.color='var(--bad)';}};
   rd.readAsArrayBuffer(file);
 }
-document.getElementById('boardMeetingFile').addEventListener('change',e=>{if(e.target.files[0])handleBoardMeetingFile(e.target.files[0]);});
+document.getElementById('boardMeetingFile').addEventListener('change',e=>{if(e.target.files[0])handleBoardMeetingFile(e.target.files[0]);e.target.value='';});
 function fmtDateKr(d){if(!d)return'';const p=d.split('-');if(p.length!==3)return d;return `${p[0]}년 ${+p[1]}월 ${+p[2]}일`;}
 /* 이름을 성(첫 글자)만 남기고 나머지는 0으로 가림 — 실제 학교 홈페이지 공개용 회의록 표기 방식(간격 유지) */
 function maskName(name){
@@ -3499,6 +3699,7 @@ function handleBoardJSONFile(file){
   rd.onload=ev=>{
     try{
       const data=JSON.parse(ev.target.result);
+      if((boardMembers.some(m=>m.name)||boardMeetings.some(m=>m.date||m.round))&&!confirm('지금 내용을 파일 내용으로 바꿀까요?'))return;
       if(data.boardMembers&&data.boardMembers.length)boardMembers=data.boardMembers;
       if(data.boardMeetings&&data.boardMeetings.length)boardMeetings=data.boardMeetings;
       if(data.meta&&data.meta.bdCorp)document.getElementById('bdCorp').value=data.meta.bdCorp;
@@ -3508,7 +3709,7 @@ function handleBoardJSONFile(file){
   };
   rd.readAsText(file);
 }
-document.getElementById('boardJsonFile').addEventListener('change',e=>{if(e.target.files[0])handleBoardJSONFile(e.target.files[0]);});
+document.getElementById('boardJsonFile').addEventListener('change',e=>{if(e.target.files[0])handleBoardJSONFile(e.target.files[0]);e.target.value='';});
 function copyBoardActiveText(){
   const active=document.querySelector('#panel-board > .subpanel.active');
   if(!active)return;
