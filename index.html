@@ -294,7 +294,7 @@
   }
 </style>
 <link rel="stylesheet" href="design/dashboard.css?v=20261116-links1">
-<script defer src="design/dashboard.js?v=20261123-notice1"></script>
+<script defer src="design/dashboard.js?v=20261123-notice2"></script>
 </head>
 <body>
 <header class="nav">
@@ -692,7 +692,7 @@
     <div class="subtabs">
       <button class="active" data-sub="budget" data-kind="settle"><span class="fc-icon">📊</span><span class="fc-title">결산</span><span class="fc-desc">결산 작성 + 총괄표</span></button>
       <button data-sub="forms"><span class="fc-icon">📎</span><span class="fc-title">부속서식</span><span class="fc-desc">별지 18종 서식</span></button>
-      <button data-sub="audit"><span class="fc-icon">🔍</span><span class="fc-title">감사보고서</span><span class="fc-desc">서식26 작성·업로드</span></button>
+      <button data-sub="audit"><span class="fc-icon">🔍</span><span class="fc-title">감사보고서</span><span class="fc-desc">서식26 작성·올리기</span></button>
     </div>
 
     <div class="subpanel" id="panel-audit">
@@ -1188,7 +1188,7 @@ let sechul=(__savedState&&__savedState.sechul)?migrateTree(__savedState.sechul):
 let prevData=null;
 
 const won=n=>(isNaN(n)?0:Math.round(n)).toLocaleString('ko-KR');
-const parseNum=s=>{if(typeof s==='number')return s;const v=parseFloat(String(s).replace(/[^0-9.\-]/g,''));return isNaN(v)?0:v;};
+const parseNum=s=>{if(typeof s==='number')return s;const t=String(s==null?'':s);const v=parseFloat(t.replace(/[^0-9.\-]/g,''));if(isNaN(v))return 0;return /^\s*[△▲]/.test(t)?-Math.abs(v):v;};   // △·▲ = 감액(빼기)
 
 /* ===== 산출식: 한 줄 계산 ===== */
 /* evalLineInfo: {v:금액|null, warn:경고문|null, memo:글자만 있는 줄} — 2026-11-23 이름 앞 숫자(1인당·3개월분) 오계산 수정, 경고 표시 */
@@ -1197,38 +1197,39 @@ function evalLineInfo(line){
   let s=String(line||'').trim();
   if(!s||/^[\s◦•∙·▶◎○]*합\s*계/.test(s))return{v:null,warn:null,memo:true};   // 빈 줄·합계 줄 제외
   const hasDigit=/\d/.test(s);
+  const hasMinusMark=/[△▲]/.test(s);   // △ 감액 표시 → 빼기
   const unitWarn=/\d\s*(만|천|억)\s*원/.test(s)?'만·천·억 대신 숫자로 써 주세요 (예: 50만원 → 500,000원)':null;
   const done=(raw)=>{
     if(raw===null||!isFinite(raw))return{v:null,warn:hasDigit?'계산 안 된 줄':null,memo:!hasDigit};
     const v=Math.round(raw);let warn=unitWarn||extraWarn;
     if(!warn&&Math.abs(raw-v)>1e-6)warn='소수점은 반올림했어요';
-    if(!warn&&v<=0)warn='0원 이하예요';
+    if(!warn&&(v===0||(v<0&&!hasMinusMark)))warn='0원 이하예요';
     return{v,warn,memo:false};
   };
   let extraWarn=null;
   if(s.includes('=')){
     const parts=s.split('=');
-    const right=parts[parts.length-1].replace(/[^0-9.]/g,'');
-    if(right){const v=parseFloat(right);if(isFinite(v))return done(v);}
+    const rightRaw=parts[parts.length-1],right=rightRaw.replace(/[^0-9.]/g,'');
+    if(right){const v=parseFloat(right);if(isFinite(v))return done(/^\s*[△▲]/.test(rightRaw)?-v:v);}
     s=parts[0];
   }
-  let e=s.replace(/[◦•∙·▶◎○]/g,'').replace(/,/g,'').replace(/[×xX]/g,'*').replace(/÷/g,'/');
+  let e=s.replace(/[◦•∙·▶◎○]/g,'').replace(/,/g,'').replace(/[×xX]/g,'*').replace(/÷/g,'/').replace(/[△▲]\s*/g,'~');   // ~ = △ 감액(끝에서 빼기로 바꿈)
   // 괄호 안 설명 제거 ("50,000원×8명(1인당)") — 연산 기호가 없는 괄호만
   e=e.replace(/([\d가-힣A-Za-z])\s*\(([^()+\-*/]*)\)/g,'$1');
   // 이름에 붙은 숫자 제거 ("1인당 50,000원", "3개월분 300,000원", "2026년 행사 500,000원") — 연산 기호 없이 뒤에 다른 숫자가 오는 경우
-  e=e.replace(/(^|[^\d.])([\d.]+)\s*([가-힣]+)[^\d+\-*/()%]*?(?=\d)/g,(all,pre,num,suf)=>{
+  e=e.replace(/(^|[^\d.])([\d.]+)\s*([가-힣]+)[^\d+\-*/()%~]*?(?=\d)/g,(all,pre,num,suf)=>{
     if(pre!=="제"&&/^(명|회|개|건|식|대|권|매|부|박|일|시간|주|인)$/.test(suf))extraWarn='숫자 사이에 ×가 빠졌는지 확인해 주세요';
     return pre+' ';});
   e=e.replace(/([0-9.]+)\s*%/g,'($1*0.01)');
   e=e.replace(/([0-9.\)])\s*[가-힣A-Za-z]+/g,'$1');
   // 연산자 뒤에 붙은 이름 제거 ("법인세 6471000원+ 지방주민세 647000원")
-  e=e.replace(/([+\-*/(])\s*[가-힣A-Za-z]+/g,'$1').replace(/\(\s*\)/g,'');
+  e=e.replace(/([+\-*/(~])\s*[가-힣A-Za-z]+/g,'$1').replace(/\(\s*\)/g,'');
   // 줄 앞에 붙은 이름 제거 ("협의회비 160000원*4회") — 줄 끝의 수식 부분만 사용
-  e=e.match(/[\d.+\-*/()\s]*$/)[0].replace(/\s+/g,'').replace(/^[+\-*/]+/,'');
+  e=e.match(/[\d.+\-*/()\s~]*$/)[0].replace(/\s+/g,'').replace(/^[+\-*/]+/,'').replace(/~/g,'-');
   if(!/^[\d.+\-*/()]+$/.test(e)||!/\d/.test(e)){
     // "=" 없이 "이름 700000원"처럼 쓴 줄 — 줄 끝의 "숫자원"만 뽑아서 금액으로 인정(앞 이름 텍스트는 무시)
-    const m=s.match(/([\d,]+(?:\.\d+)?)\s*원\s*$/);
-    if(m){const v=parseFloat(m[1].replace(/,/g,''));if(isFinite(v))return done(v);}
+    const m=s.match(/([△▲]\s*)?([\d,]+(?:\.\d+)?)\s*원\s*$/);
+    if(m){const v=parseFloat(m[2].replace(/,/g,''));if(isFinite(v))return done(m[1]?-v:v);}
     return done(null);
   }
   try{const r=Function('"use strict";return('+e+')')();return done(isFinite(r)?r:null);}catch(_){return done(null);}
@@ -2735,12 +2736,27 @@ function normDate(v){
   const s=String(v).trim();
   let m=s.match(/^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*[.일]?$/);
   if(!m)m=s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if(!m){const m2=s.match(/^(\d{2})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*[.일]?$/);if(m2)m=[m2[0],'20'+m2[1],m2[2],m2[3]];}   // 두 자리 연도 26.3.5 → 2026-03-05
   if(m)return `${m[1]}-${String(+m[2]).padStart(2,'0')}-${String(+m[3]).padStart(2,'0')}`;
   return s;
 }
 const REV_HEAD=["관","항","목","금액(원)","납부자 주소·성명(상호)","적요","발의일(YYYY-MM-DD)","고지서발행일","납입기한","징수부등기일","고지서번호"];
 const EXP_HEAD=["관","항","목","적요","공급가액","부가세","수수료","소득세","주민세","기타공제","발의일","지출원인행위등기일","납품일","검사일","청구일","지출일","지출부등기일","물품대장등기일","공급자상호성명","사업자번호","주민등록번호","주소","계좌번호","영수일자","영수인성명"];
 /* 빈 양식: 머리글만 */
+/* 주민등록번호·사업자번호 열은 텍스트 형식(앞 0이 빠지지 않게) — 2026-11-23 */
+function idTextCols(ws,head,nRows){
+  head.forEach((h,ci)=>{if(!/주민등록번호|사업자번호/.test(h))return;
+    for(let ri=1;ri<=nRows;ri++){const ref=XLSX.utils.encode_cell({r:ri,c:ci});const c=ws[ref];
+      if(c){c.t='s';c.v=String(c.v);c.z='@';}else ws[ref]={t:'s',v:'',z:'@'};}});
+  const rg=XLSX.utils.decode_range(ws['!ref']);rg.e.r=Math.max(rg.e.r,nRows);ws['!ref']=XLSX.utils.encode_range(rg);
+}
+/* 엑셀에서 숫자로 바뀌어 앞 0이 빠진 번호를 자릿수만큼 채움 (주민번호 13, 사업자번호 10) */
+function padIdNo(v,len){
+  const s=String(v==null?'':v).trim();
+  if(!/^\d+$/.test(s)||s.length>len||s.length<len-3)return s;
+  const d=s.padStart(len,'0');
+  return len===13?d.slice(0,6)+'-'+d.slice(6):d.slice(0,3)+'-'+d.slice(3,5)+'-'+d.slice(5);
+}
 function downloadDealBlank(){
   const wb=XLSX.utils.book_new();
   const yr=document.getElementById('revYear').value||document.getElementById('expYear').value||'';
@@ -2749,6 +2765,7 @@ function downloadDealBlank(){
   const r=XLSX.utils.aoa_to_sheet([REV_HEAD]);r['!cols']=REV_HEAD.map(h=>({wch:Math.max(12,Math.min(30,h.length*2+4))}));
   XLSX.utils.book_append_sheet(wb,r,"징수결의서");
   const e=XLSX.utils.aoa_to_sheet([EXP_HEAD]);e['!cols']=EXP_HEAD.map(h=>({wch:Math.max(12,Math.min(24,h.length*2+4))}));
+  idTextCols(e,EXP_HEAD,200);
   XLSX.utils.book_append_sheet(wb,e,"지출결의서");
   XLSX.writeFile(wb,`${yr?yr+'_':''}법인회계_징수지출_빈양식.xlsx`);
 }
@@ -2767,6 +2784,7 @@ function downloadDealTemplate(){
   const expHead=EXP_HEAD;
   const expRows=expenseList.filter(r=>calcExpenseRow(r).hapgye||r.mok||r.jeokyo||r.supName).map(r=>[r.gwan,r.hang,r.mok,r.jeokyo,r.gongGeupGa||"",r.buga||"",r.susu||"",r.sodeok||"",r.jumin||"",r.gitaGongje||"",r.dBalui,r.dJichulWonin,r.dNappum,r.dGeomsa,r.dCheonggu,r.dJichul,r.dJichulBu,r.dMulpum,r.supName,r.supBizNo,r.supRrn,r.supAddr,r.supAccount,r.yeongsuDate,r.yeongsuName]);
   const wsExp=XLSX.utils.aoa_to_sheet([expHead,...expRows]);wsExp['!cols']=expHead.map(h=>({wch:Math.max(12,Math.min(24,h.length*2+4))}));
+  idTextCols(wsExp,expHead,expRows.length+200);
   XLSX.utils.book_append_sheet(wb,wsExp,"지출결의서");
   // 보기용 현금출납부 (불러올 때는 읽지 않음)
   const cb=[["※ 보기용 시트 — 불러오기 때는 읽지 않아요. 고칠 땐 징수결의서·지출결의서 시트를 고치세요."],["일자","수취인(납입자)","적요","과목(목)","지출번호","수입액","지출액","잔액"]];
@@ -2849,7 +2867,7 @@ function handleDealFile(file,hint){
       expenseList=expRows.map(r=>({gwan:S(r[0]),hang:S(r[1]),mok:S(r[2]),jeokyo:S(r[3]),
         gongGeupGa:parseNum(r[4]),buga:parseNum(r[5]),susu:parseNum(r[6]),sodeok:parseNum(r[7]),jumin:parseNum(r[8]),gitaGongje:parseNum(r[9]),
         dBalui:normDate(r[10]),dJichulWonin:normDate(r[11]),dNappum:normDate(r[12]),dGeomsa:normDate(r[13]),dCheonggu:normDate(r[14]),dJichul:normDate(r[15]),dJichulBu:normDate(r[16]),dMulpum:normDate(r[17]),
-        supName:S(r[18]),supBizNo:S(r[19]),supRrn:S(r[20]),supAddr:S(r[21]),supAccount:S(r[22]),
+        supName:S(r[18]),supBizNo:padIdNo(r[19],10),supRrn:padIdNo(r[20],13),supAddr:S(r[21]),supAccount:S(r[22]),
         yeongsuDate:normDate(r[23]),yeongsuName:S(r[24])}));
       renderExpenseCards();
     }
