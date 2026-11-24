@@ -144,16 +144,16 @@
  body.brand-law:has(.law-christmas-hero:not([hidden])) { position: relative; }
  body.brand-law:has(.law-christmas-hero:not([hidden])) > .brand-topbar {
   position: absolute !important;
-  inset: 20px 28px auto auto !important;
+  inset: 30px 38px auto auto !important;
   z-index: 4;
   height: auto;
   min-height: 0 !important;
-  padding: 10px 12px !important;
+  padding: 0 !important;
  }
  body.brand-law:has(.law-christmas-hero:not([hidden])) > .brand-topbar > a {
-  background: var(--law-winter-control);
-  color: var(--law-winter-ink);
-  padding: 5px 9px;
+  background: var(--law-winter-ink);
+  color: var(--law-winter-control);
+  padding: 7px 11px;
   border-radius: 6px;
   font-size: 12px !important;
  }
@@ -163,9 +163,9 @@
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) minmax(0, 37%);
   padding: 0 !important;
-  min-height: 232px !important;
+  min-height: clamp(232px, 20vw, 320px) !important;
   overflow: hidden;
-  background: var(--law-winter-night) url('law-christmas-bg.webp') right center / cover no-repeat !important;
+  background: var(--law-winter-night) url('law-christmas-village.webp') right 46% / cover no-repeat !important;
   border-radius: 17px !important;
  }
  body.brand-law .desk-hero.law-christmas-hero::before,
@@ -191,32 +191,24 @@
   font-size: clamp(13px, 1.4vw, 18px) !important;
   line-height: 1.5 !important;
  }
- .law-christmas-art {
-  display: block;
-  width: 100%;
-  height: clamp(215px, 20vw, 310px);
-  object-fit: contain;
-  object-position: center bottom;
-  align-self: end;
- }
 }
 @media screen and (max-width: 800px) {
  body.brand-law:has(.law-christmas-hero:not([hidden])) { padding-top: 0 !important; }
  body.brand-law:has(.law-christmas-hero:not([hidden])) > .brand-topbar {
-  inset: 12px 12px auto !important;
+  inset: 22px 22px auto !important;
   justify-content: space-between;
   background: transparent;
  }
  body.brand-law header.app { padding: 12px 12px 0 !important; }
  body.brand-law .desk-hero.law-christmas-hero {
   padding-top: 45px !important;
-  min-height: 0 !important;
+  min-height: clamp(155px, calc(45px + 23vw), 223px) !important;
   grid-template-columns: minmax(0, 1fr) minmax(0, 36%);
-  background-image: linear-gradient(90deg, #102039b3, transparent), url('law-christmas-bg.webp') !important;
+  background-position: 60% center !important;
   border-radius: 12px !important;
  }
- .law-christmas-copy { padding: 14px 0 20px 14px; }
- .law-christmas-art { height: clamp(110px, 23vw, 178px); }
+ .law-christmas-copy { padding: 14px 12px 20px 14px; }
+ body.brand-law .law-christmas-copy p { text-shadow: 0 1px 3px var(--law-winter-night); }
 }
 
 /* Home shortcuts match the portal cards. */
