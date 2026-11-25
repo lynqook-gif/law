@@ -23,7 +23,7 @@ function syncWorkspace(){
 const observed=c.site==='law'?document.querySelectorAll('main>.panel'):c.site==='gyobok-guide'?document.querySelectorAll('.page'):c.site==='jeonbuk-gyohaeng'?[document.body,...document.querySelectorAll('.panel')]:[];
 const observer=new MutationObserver(syncWorkspace);observed.forEach(el=>observer.observe(el,{attributes:true,attributeFilter:['class','hidden']}));syncWorkspace();
 if(c.site==='law'){
- const hint=document.querySelector('#inputArea .hint');if(hint){const details=document.createElement('details');details.className='desk-help';const summary=document.createElement('summary');summary.textContent='출력 규칙과 미리보기 안내';hint.before(details);details.append(summary,hint);}
+ const hint=document.querySelector('#inputArea .hint');if(hint){const details=document.createElement('details');details.className='desk-help';const summary=document.createElement('summary');summary.textContent='인쇄 규칙과 미리보기 안내';hint.before(details);details.append(summary,hint);}
 }
 
 const bottom=rail.querySelector('.desk-bottom');bottom.innerHTML='<a class="desk-support" href="https://open.kakao.com/o/g4Tap2Ri" target="_blank" rel="noopener"><img src="design/assistant-face.png" alt="" width="42" height="42"><span><b>도움이 필요하신가요?</b><small>문의·건의하기 ↗</small></span></a>';
@@ -55,7 +55,7 @@ const homeCards=document.getElementById('cards');if(homeCards){
 
 nav.querySelector('[data-desk-action="tab:acc"] span:last-child').textContent='예산관리';nav.querySelector('[data-desk-action="tab:settle"] span:last-child').textContent='결산관리';nav.querySelector('[data-desk-action="tab:settle"] .desk-icon').textContent='04';nav.querySelector('[data-desk-action="tab:board"] .desk-icon').textContent='05';nav.querySelector('[data-desk-action="tab:docreg"] .desk-icon').textContent='06';
 
-const releaseDialog=document.createElement('dialog');releaseDialog.className='desk-release';releaseDialog.setAttribute('aria-labelledby','desk-release-title');releaseDialog.innerHTML='<div class="desk-release-head"><div><small>변경 내역</small><h2 id="desk-release-title">업데이트 안내</h2></div><button type="button" class="desk-release-close" aria-label="업데이트 안내 닫기">✕</button></div><div class="desk-release-body"><time datetime="2026-11-24">2026. 11. 24.</time><h3>바로가기를 교행e 카드로 바꿨어요</h3><ul><li>사이트 바로가기를 교행e 카드로 바꿨어요.</li></ul><time datetime="2026-11-24">2026. 11. 24.</time><h3>첫 화면 그림을 새로 그렸어요</h3><ul><li>눈 내리는 한옥 마을과 교행e 그림으로 바꿨어요.</li></ul><time datetime="2026-11-24">2026. 11. 24.</time><h3>첫 화면을 크리스마스 느낌으로 바꿨어요</h3><ul><li>크리스마스 교행e와 새 제목 글씨를 넣었어요.</li><li>교행e 사이트 바로가기를 한 줄로 정리했어요.</li></ul><time datetime="2026-11-23">2026. 11. 23.</time><h3>작은 오류를 고쳤어요</h3><ul><li>산출기초의 △ 감액 표시를 빼기로 계산해요.</li><li>26.3.5처럼 두 자리 연도 날짜도 알아봐요.</li><li>엑셀에서 주민번호·사업자번호 앞 0이 빠지지 않아요.</li></ul><time datetime="2026-11-23">2026. 11. 23.</time><h3>계산 오류를 고치고 저장을 보강했어요</h3><ul><li>산출기초에서 "1인당", "3개월분" 같은 숫자가 금액에 섞이던 오류를 고쳤어요.</li><li>법인전입금 탭도 자동 저장돼요.</li><li>주민번호·계좌번호는 이 컴퓨터에 저장하지 않아요.</li><li>엑셀은 열 순서가 달라도 올라가요.</li></ul><time datetime="2026-11-16">2026. 11. 16.</time><h3>사이트 바로가기에 급식췍·재물콕 추가</h3><ul><li>교행e 사이트 바로가기에 <b>급식췍</b>(바코드로 급식 체크)과 <b>재물콕</b>(휴대폰으로 재물조사)을 넣었어요.</li><li>바로가기마다 사이트에 맞는 그림을 붙였어요.</li></ul><time datetime="2026-10-25">2026. 10. 25.</time><h3>디자인 일괄 수정</h3><ul><li>교행e 도구 5개(전북교행길라잡이·법인회계Master·본예산 길라잡이·식단표 편집기·교복길라잡이) 화면을 같은 모양으로 정리했어요.</li><li>글씨를 더 크고 또렷하게, 메뉴와 선택한 칸을 알아보기 쉽게 바꿨어요.</li><li>문의·건의는 카카오 오픈채팅으로 받아요.</li><li>기능과 입력해 둔 자료는 그대로예요.</li></ul><time datetime="2026-10-15">2026. 10. 15.</time><h3>문서등록대장 추가</h3><ul><li>왼쪽 메뉴 06 문서등록대장에서 생산·접수 문서를 한 대장에 등록하고 엑셀로 내보내요.</li><li>전북교행길라잡이에 있던 도구를 이곳으로 옮겼어요.</li></ul><time datetime="2026-10-12">2026. 10. 12.</time><h3>디자인 수정</h3><ul>'+["최상위 메뉴를 홈·예산관리·법인회계·결산관리·이사회로 정리했습니다.", "법인회계 하위에서 지출·수입을 선택할 수 있습니다.", "이사회 탭과 홈 업무 카드의 배치를 정리했습니다."].map(t=>'<li>'+t+'</li>').join('')+'</ul><div class="desk-release-history"></div></div>';
+const releaseDialog=document.createElement('dialog');releaseDialog.className='desk-release';releaseDialog.setAttribute('aria-labelledby','desk-release-title');releaseDialog.innerHTML='<div class="desk-release-head"><div><small>변경 내역</small><h2 id="desk-release-title">업데이트 안내</h2></div><button type="button" class="desk-release-close" aria-label="업데이트 안내 닫기">✕</button></div><div class="desk-release-body"><time datetime="2026-11-25">2026. 11. 25.</time><h3>사이트를 새 모습으로 바꿨어요</h3><ul><li>화면을 깔끔하게 정리했어요.</li><li>위쪽 메뉴에서 지출·수입을 바로 골라요.</li><li>계산·저장·인쇄는 그대로예요. 예전 화면이 보이면 Ctrl+F5를 눌러 주세요.</li></ul><time datetime="2026-11-24">2026. 11. 24.</time><h3>바로가기를 교행e 카드로 바꿨어요</h3><ul><li>사이트 바로가기를 교행e 카드로 바꿨어요.</li></ul><time datetime="2026-11-24">2026. 11. 24.</time><h3>첫 화면 그림을 새로 그렸어요</h3><ul><li>눈 내리는 한옥 마을과 교행e 그림으로 바꿨어요.</li></ul><time datetime="2026-11-24">2026. 11. 24.</time><h3>첫 화면을 크리스마스 느낌으로 바꿨어요</h3><ul><li>크리스마스 교행e와 새 제목 글씨를 넣었어요.</li><li>교행e 사이트 바로가기를 한 줄로 정리했어요.</li></ul><time datetime="2026-11-23">2026. 11. 23.</time><h3>작은 오류를 고쳤어요</h3><ul><li>산출기초의 △ 감액 표시를 빼기로 계산해요.</li><li>26.3.5처럼 두 자리 연도 날짜도 알아봐요.</li><li>엑셀에서 주민번호·사업자번호 앞 0이 빠지지 않아요.</li></ul><time datetime="2026-11-23">2026. 11. 23.</time><h3>계산 오류를 고치고 저장을 보강했어요</h3><ul><li>산출기초에서 "1인당", "3개월분" 같은 숫자가 금액에 섞이던 오류를 고쳤어요.</li><li>법인전입금 탭도 자동 저장돼요.</li><li>주민번호·계좌번호는 이 컴퓨터에 저장하지 않아요.</li><li>엑셀은 열 순서가 달라도 올라가요.</li></ul><time datetime="2026-11-16">2026. 11. 16.</time><h3>사이트 바로가기에 급식췍·재물콕 추가</h3><ul><li>교행e 사이트 바로가기에 <b>급식췍</b>(바코드로 급식 체크)과 <b>재물콕</b>(휴대폰으로 재물조사)을 넣었어요.</li><li>바로가기마다 사이트에 맞는 그림을 붙였어요.</li></ul><time datetime="2026-10-25">2026. 10. 25.</time><h3>디자인 일괄 수정</h3><ul><li>교행e 도구 5개(전북교행길라잡이·법인회계Master·본예산 길라잡이·식단표 편집기·교복길라잡이) 화면을 같은 모양으로 정리했어요.</li><li>글씨를 더 크고 또렷하게, 메뉴와 선택한 칸을 알아보기 쉽게 바꿨어요.</li><li>문의·건의는 카카오 오픈채팅으로 받아요.</li><li>기능과 입력해 둔 자료는 그대로예요.</li></ul><time datetime="2026-10-15">2026. 10. 15.</time><h3>문서등록대장 추가</h3><ul><li>왼쪽 메뉴 06 문서등록대장에서 생산·접수 문서를 한 대장에 등록하고 엑셀로 내보내요.</li><li>전북교행길라잡이에 있던 도구를 이곳으로 옮겼어요.</li></ul><time datetime="2026-10-12">2026. 10. 12.</time><h3>디자인 수정</h3><ul>'+["최상위 메뉴를 홈·예산관리·법인회계·결산관리·이사회로 정리했습니다.", "법인회계 하위에서 지출·수입을 선택할 수 있습니다.", "이사회 탭과 홈 업무 카드의 배치를 정리했습니다."].map(t=>'<li>'+t+'</li>').join('')+'</ul><div class="desk-release-history"></div></div>';
 document.body.append(releaseDialog);const history=releaseDialog.querySelector('.desk-release-history');const source=document.querySelector('.news');if(source){const copy=source.cloneNode(true);copy.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));copy.removeAttribute('id');history.append(copy);source.classList.add('desk-release-source');}
 const releaseButton=document.createElement('button');releaseButton.type='button';releaseButton.className='desk-update-button';releaseButton.innerHTML='<span aria-hidden="true">↻</span><span>업데이트 안내</span>';releaseButton.addEventListener('click',()=>releaseDialog.showModal());releaseDialog.querySelector('.desk-release-close').addEventListener('click',()=>releaseDialog.close());releaseDialog.addEventListener('click',e=>{if(e.target===releaseDialog){const r=releaseDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)releaseDialog.close()}});
 
@@ -64,7 +64,7 @@ document.querySelectorAll('.news').forEach(el=>{if(!el.closest('.desk-release'))
 const homeIconPaths=['<rect x="4" y="6" width="16" height="15" rx="2"/><path d="M8 6V3h8v3M8 11h8M8 15h4"/>','<path d="M4 8h16m-4-4 4 4-4 4M20 16H4m4-4-4 4 4 4"/>','<path d="M4 21h17M7 17v-5m5 5V7m5 10V3"/>','<path d="m3 9 9-6 9 6H3Zm2 0v11m5-11v11m4-11v11m5-11v11M3 21h18"/>'];
 document.querySelectorAll('#cards>.mcard .ic').forEach((icon,i)=>{icon.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+homeIconPaths[i]+'</svg>';});
 
-const homeUpdates=document.createElement('section');homeUpdates.className='desk-home-updates';homeUpdates.setAttribute('aria-labelledby','desk-home-updates-title');homeUpdates.innerHTML='<header><div><small>서비스 소식</small><h2 id="desk-home-updates-title">업데이트 안내</h2><p>새로 추가된 기능과 개선 내용을 확인하세요.</p></div><button type="button" class="desk-all-updates">전체 내역 보기 ↗</button></header><div class="desk-home-update-latest"><time datetime="2026-11-24">2026. 11. 24.</time><div><h3>바로가기를 교행e 카드로 바꿨어요</h3><ul></ul></div></div>';
+const homeUpdates=document.createElement('section');homeUpdates.className='desk-home-updates';homeUpdates.setAttribute('aria-labelledby','desk-home-updates-title');homeUpdates.innerHTML='<header><div><small>서비스 소식</small><h2 id="desk-home-updates-title">업데이트 안내</h2><p>새로 추가된 기능과 개선 내용을 확인하세요.</p></div><button type="button" class="desk-all-updates">전체 내역 보기 ↗</button></header><div class="desk-home-update-latest"><time datetime="2026-11-25">2026. 11. 25.</time><div><h3>사이트를 새 모습으로 바꿨어요</h3><ul></ul></div></div>';
 const previewList=homeUpdates.querySelector('ul');releaseDialog.querySelectorAll('.desk-release-body>ul:first-of-type>li').forEach(li=>previewList.append(li.cloneNode(true)));homeUpdates.querySelector('.desk-all-updates').addEventListener('click',()=>releaseDialog.showModal());
 if(c.site==='law'){const shortcuts=document.getElementById('cards');shortcuts.classList.add('desk-home-shortcuts');document.querySelector('#panel-home .sec-head')?.classList.add('desk-home-shortcuts');shortcuts.before(homeUpdates);}
 if(c.site==='jeonbuk-gyohaeng'){const shortcuts=document.querySelector('#menu .menu2');shortcuts.classList.add('desk-home-shortcuts');shortcuts.before(homeUpdates);document.querySelector('#menu .qhead')?.classList.add('desk-home-shortcuts');document.querySelector('#menu .qlist')?.classList.add('desk-home-shortcuts');}
@@ -260,15 +260,144 @@ if(c.site==='jeonbuk-gyohaeng'){document.querySelectorAll('.quick2').forEach(box
   syncViewport();
 })();
 
-/* Christmas artwork for the home banner. */
-(()=>{
- const hero=document.getElementById('design-hero');
- if(!hero || !document.body.classList.contains('brand-law'))return;
- hero.classList.add('law-christmas-hero');
- hero.innerHTML=`
-  <div class="law-christmas-copy">
-   <h1><img src="design/law-christmas-title.webp" alt="교행e의 법인회계Master"></h1>
-   <p>예산부터 결산, 이사회까지 한곳에서</p>
-  </div>
- `;
+/* 화면 전용 미니멀 구성 */
+(() => {
+  const contactUrl = 'https://open.kakao.com/o/g4Tap2Ri';
+  const tabs = document.querySelector('#tabs');
+  const main = document.querySelector('main');
+  const go = id => tabs.querySelector('[data-tab="' + id + '"]').click();
+  const header = document.createElement('header');
+  header.className = 'law-top noprint';
+  header.innerHTML = `
+    <div class="law-width law-top-inner">
+      <a class="law-logo" href="#panel-home" data-law-tab="home" aria-label="교행e 홈"><img src="design/brand-logo.webp" alt="교행e"></a>
+      <button class="law-hamburger" type="button" aria-expanded="false" aria-controls="law-nav" aria-label="메뉴 열기">☰</button>
+      <nav id="law-nav" aria-label="주 메뉴">
+        <button type="button" data-law-tab="home">홈</button>
+        <button type="button" data-law-tab="acc">예산관리</button>
+        <button type="button" data-law-tab="settle">결산관리</button>
+        <button type="button" data-law-tab="sechul">지출</button>
+        <button type="button" data-law-tab="seip">수입</button>
+        <button type="button" data-law-tab="board">이사회</button>
+        <button type="button" data-law-tab="docreg">문서등록대장</button>
+      </nav>
+      <a class="law-pill law-contact" href="${contactUrl}" target="_blank" rel="noopener">문의·건의 ↗</a>
+    </div>`;
+  document.body.prepend(header);
+  document.body.classList.add('law-minimal');
+  const nav = header.querySelector('nav');
+  const hamburger = header.querySelector('.law-hamburger');
+  function setMenu(open) {
+    hamburger.setAttribute('aria-expanded', String(open));
+    hamburger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+  }
+  hamburger.addEventListener('click', () => setMenu(hamburger.getAttribute('aria-expanded') !== 'true'));
+  header.addEventListener('click', event => {
+    const item = event.target.closest('[data-law-tab]');
+    if (!item) return;
+    event.preventDefault();
+    go(item.dataset.lawTab);
+    if (hamburger.getAttribute('aria-expanded') === 'true') hamburger.focus();
+    setMenu(false);
+    window.scrollTo(0, 0);
+  });
+  document.addEventListener('click', event => {
+    if (!header.contains(event.target)) setMenu(false);
+  });
+  header.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    if (hamburger.getAttribute('aria-expanded') === 'true') {
+      setMenu(false);
+      hamburger.focus();
+    }
+  });
+  function syncNavigation() {
+    const id = main.querySelector(':scope > .panel.active')?.id.slice(6) || 'home';
+    nav.querySelectorAll('[data-law-tab]').forEach(item => {
+      if (item.dataset.lawTab === id) item.setAttribute('aria-current', 'page');
+      else item.removeAttribute('aria-current');
+    });
+  }
+  const observer = new MutationObserver(syncNavigation);
+  main.querySelectorAll(':scope > .panel').forEach(panel =>
+    observer.observe(panel, {attributes: true, attributeFilter: ['class']}));
+  syncNavigation();
+
+  // 화면용 제목·버튼의 장식만 감싸고, 인쇄 시 원래 글자를 표시합니다.
+  const decorations = 'h2,h3,h4,button,label,summary,.doc-toolbar .t,.board-toolbar .t,.hint,.desc,.note,.doc-guide,#kindInfo';
+  const documentContent = '.paper,.doc,[contenteditable],.law-decoration,.fc-icon';
+  const leadingDecoration = /^(\s*)((?:(?:\p{Extended_Pictographic}|[⬇⬆])\uFE0F?[ \t]*)+)/u;
+  function wrapDecoration(node) {
+    const parent = node.parentElement;
+    if (!parent?.closest(decorations) || parent.closest(documentContent)) return;
+    const prefix = node.data.match(leadingDecoration);
+    if (!prefix || /^[⚠❗❌✅✔]/u.test(prefix[2])) return;
+    const remainingText = node.data.slice(prefix[0].length);
+    if (!remainingText.trim() && !node.nextElementSibling?.textContent.trim()) return;
+    const icon = document.createElement('span');
+    icon.className = 'law-decoration';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = prefix[2];
+    node.after(icon, remainingText);
+    node.data = prefix[1];
+  }
+  function wrapDecorations(root) {
+    if (root.nodeType === Node.TEXT_NODE) {
+      wrapDecoration(root);
+      return;
+    }
+    if (root.nodeType !== Node.ELEMENT_NODE || root.closest(documentContent)) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(wrapDecoration);
+  }
+  wrapDecorations(main);
+  new MutationObserver(records => {
+    records.forEach(record => {
+      if (record.type === 'characterData') wrapDecoration(record.target);
+      else record.addedNodes.forEach(wrapDecorations);
+    });
+  }).observe(main, {childList:true, subtree:true, characterData:true});
+
+  const hero = document.querySelector('#design-hero');
+  hero.classList.remove('photo-live-hero');
+  hero.innerHTML = `
+    <h1>교행e의 법인회계Master</h1>
+    <p>예산부터 결산, 이사회까지 학교법인 회계업무를 한곳에서.</p>
+    <div class="law-actions">
+      <button type="button" class="law-pill law-primary">예산관리 시작</button>
+      <a class="law-pill" href="#law-guide">사용 방법</a>
+    </div>`;
+  hero.querySelector('button').addEventListener('click', () => { go('acc'); window.scrollTo(0, 0); });
+  document.querySelector('.photo-quick-guide').id = 'law-guide';
+
+  const notice = document.querySelector('.desk-home-updates');
+  const allUpdates = notice.querySelector('.desk-all-updates');
+  allUpdates.textContent = '전체 보기 ↗';
+  const recent = document.createElement('ul');
+  recent.className = 'law-recent';
+  [...document.querySelectorAll('.desk-release-body > time')].slice(0, 5).forEach(date => {
+    const item = document.createElement('li');
+    item.append(date.cloneNode(true), date.nextElementSibling.textContent);
+    recent.append(item);
+  });
+  notice.replaceChildren(notice.querySelector('header'), recent);
+
+  const shortcuts = document.querySelector('.desk-related-sites');
+  notice.closest('.photo-home-bottom').after(shortcuts);
+  shortcuts.querySelectorAll('a').forEach(link => {
+    link.classList.remove('photo-related-card');
+    link.querySelector('img')?.remove();
+  });
+  const credit = document.querySelector('footer.credit');
+  if (credit) {
+    const contact = document.createElement('a');
+    contact.href = contactUrl;
+    contact.target = '_blank';
+    contact.rel = 'noopener';
+    contact.textContent = '카카오 오픈채팅 ↗';
+    credit.append(contact);
+  }
+
 })();

@@ -243,3 +243,141 @@
 .desk-related-sites a.photo-related-card{position:relative;background:#f1f6fd}
 .desk-related-sites a.photo-related-card > span{visibility:hidden}
 .desk-related-sites .photo-related-card img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:contain;border-radius:inherit}
+
+/* 미니멀 화면. 인쇄 서식은 원본 스타일을 사용합니다. */
+@media print { .law-top { display:none!important } }
+@media screen {
+  body.law-minimal {
+    --navy:#1e3a5f; --navy2:#284c75; --line:#dde5ee;
+    --law-ink:#13243a; --law-muted:#526278; --law-blue:#246cb3;
+    --law-wash:#f3f7fc; --law-head:#f2f5f8;
+    padding:0!important; background:#fff!important; color:var(--law-ink);
+  }
+  body.law-minimal, .law-minimal :is(button,input,select,textarea) {
+    font-family:GyohaengUI,"Malgun Gothic",sans-serif!important;
+  }
+  .law-minimal::before, .law-minimal .desk-rail, .law-minimal .brand-topbar,
+  .law-minimal .mobile-menu-toggle, .law-minimal .mobile-menu-backdrop,
+  .law-minimal .desk-worktag, .law-minimal .desk-crumb, .law-minimal .photo-home-icon,
+  .law-minimal .desk-home-shortcuts, .law-minimal .desk-home-updates header small,
+  .law-minimal .desk-home-updates header p, .law-minimal .desk-related-sites img { display:none!important }
+  .law-width, body.law-minimal > main, body.law-minimal > header.app {
+    width:min(1120px,calc(100% - 72px))!important; margin-inline:auto!important;
+    max-width:none!important; padding-inline:0!important;
+  }
+  body.law-minimal > main { padding-block:24px 44px!important }
+  body.law-minimal > header.app { padding-block:0!important }
+  body.law-minimal.desk-working > header.app { display:none!important }
+  .law-top { background:#fff; border-bottom:1px solid var(--line); position:relative; z-index:20 }
+  .law-top-inner { min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:16px }
+  .law-logo img { display:block; width:auto; height:44px; filter:saturate(.58) }
+  #law-nav { display:flex; align-items:center; gap:clamp(12px,1.7vw,26px); color:var(--law-muted) }
+  #law-nav button, .law-hamburger {
+    border:0; background:none; color:inherit; padding:8px 0; font-size:14px; font-weight:650;
+    line-height:1.3; cursor:pointer; white-space:nowrap;
+  }
+  #law-nav [aria-current] { color:var(--navy); font-weight:820 }
+  #law-nav button:hover { color:var(--law-blue) }
+  .law-hamburger { display:none }
+  .law-minimal .law-pill {
+    display:inline-flex; justify-content:center; align-items:center; min-height:40px;
+    background:white; border:1px solid var(--line); border-radius:999px; padding:9px 17px;
+    font-size:14px; font-weight:700; color:var(--law-ink); white-space:nowrap; text-decoration:none; cursor:pointer;
+  }
+  .law-minimal .law-primary { background:var(--law-ink); border-color:var(--law-ink); color:white }
+  .law-pill:hover { box-shadow:0 0 0 3px #e9f2fc }
+  .law-minimal :is(a,button,summary,input,textarea,select):focus-visible { outline:2px solid #398fe1; outline-offset:2px }
+  body.law-minimal #design-hero:not([hidden]) {
+    display:block!important; background:white!important; color:var(--law-ink)!important;
+    text-align:center; height:auto!important; min-height:0!important;
+    border:0!important; box-shadow:none!important; padding:64px 0 24px!important; margin:0!important;
+  }
+  .law-minimal #design-hero::before,.law-minimal #design-hero::after { content:none!important }
+  .law-minimal #design-hero h1 {
+    font-size:clamp(2rem,5.15vw,4.65rem)!important; line-height:1.08!important;
+    letter-spacing:-.066em; font-weight:840; color:var(--law-ink)!important; margin:0;
+  }
+  .law-minimal #design-hero p { color:var(--law-muted)!important; font-size:clamp(1rem,2vw,1.24rem); margin:18px 0 22px }
+  .law-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:10px }
+  .law-actions .law-pill { min-height:46px; padding-inline:22px }
+  .law-minimal .photo-home-cards { gap:12px; margin-bottom:24px }
+  .law-minimal .photo-home-card {
+    background:#fff!important; color:var(--law-ink)!important; min-height:112px;
+    border:1px solid var(--line)!important; border-radius:15px!important; box-shadow:none!important;
+  }
+  .law-minimal .photo-home-card:hover { background:var(--law-wash)!important; transform:none!important }
+  .law-minimal .photo-home-card small { color:var(--law-muted)!important }
+  .law-minimal .photo-home-arrow { color:var(--law-blue)!important }
+  .law-minimal .photo-home-bottom { gap:12px }
+  .law-minimal :is(.desk-home-updates,.photo-quick-guide) { border-radius:15px!important; box-shadow:none!important }
+  .law-minimal .desk-home-updates > header { margin-bottom:0; align-items:center }
+  .law-recent { margin:0; padding:0; list-style:none; color:var(--law-ink) }
+  .law-recent li { display:flex; gap:12px; align-items:baseline; padding:8px 0; border-top:1px solid var(--line) }
+  .law-recent li:first-child { border-top:0 }
+  .law-recent time { flex:none; color:var(--law-muted); font-size:13px; font-variant-numeric:tabular-nums }
+  .law-minimal .desk-all-updates { background:none!important; border:0!important; color:var(--law-blue)!important }
+  body.law-minimal .desk-related-sites { padding:16px 0 0!important; margin:12px 0 0!important; border:0!important; box-shadow:none!important; background:none!important }
+  body.law-minimal .desk-related-sites > div { display:flex!important; flex-wrap:wrap; gap:8px 20px!important }
+  body.law-minimal .desk-related-sites a { background:none!important; color:var(--law-muted)!important; padding:2px 0!important; border:0!important; box-shadow:none!important; font-size:14px; font-weight:500; min-height:0!important }
+  body.law-minimal .desk-related-sites a:hover { color:var(--law-blue)!important; text-decoration:underline }
+  .law-minimal footer.credit { background:#fff!important; border-top:1px solid var(--line)!important; color:var(--law-muted)!important }
+  .law-minimal footer.credit a { margin-inline-start:12px; color:var(--law-blue)!important }
+  .law-minimal .desk-workheading { background:none!important; box-shadow:none!important; border:0!important; padding:10px 0 16px!important }
+  .law-minimal .desk-workheading h1 { color:var(--law-ink)!important; letter-spacing:-.04em }
+  body.law-minimal main :is(.card,.deal-excel,.subtabs):not(.paper *) { background:#fff!important; border-color:var(--line)!important; border-radius:15px!important; box-shadow:none!important }
+  body.law-minimal main .subtabs { background:#fff!important }
+  body.law-minimal main .subtabs > button { background:#fff!important; border-color:var(--line)!important; color:var(--law-muted)!important; box-shadow:none!important }
+  body.law-minimal main .subtabs > button.active { background:#edf5fd!important; border-color:#bfd6f0!important; color:var(--navy)!important }
+  body.law-minimal main .subtabs .fc-icon, .law-minimal .law-decoration { display:none!important }
+  .law-minimal main :is(input:not([type=checkbox],[type=radio],[type=color]),select,textarea):not(.paper *) {
+    border-color:var(--line)!important; border-radius:8px!important; color:var(--law-ink)!important; box-shadow:none!important;
+  }
+  body.law-minimal main :is(thead th,thead td):not(.paper *,.doc *) {
+    background:var(--law-head)!important; color:var(--law-ink)!important; border-color:var(--line)!important;
+  }
+  body.law-minimal main :is(.btn,.btn-print):not(.paper *) { box-shadow:none!important; border-radius:999px!important }
+  body.law-minimal main :is(.btn-danger,.btn-del,.del-btn,.danger,.btn-red):not(.paper *) {
+    background:#fff!important; color:#79505a!important; border:1px solid #e9d9de!important; box-shadow:none!important;
+  }
+  @media (max-width:800px) {
+    .law-width, body.law-minimal > main, body.law-minimal > header.app { width:calc(100% - 36px)!important }
+    .law-top-inner { min-height:64px; gap:10px }
+    .law-logo { order:1; margin-right:auto }
+    .law-logo img { height:36px }
+    .law-hamburger { display:block; padding:8px; font-size:20px }
+    .law-contact { order:2 }
+    #law-nav {
+      display:none; position:absolute; inset:100% 0 auto; background:#fff; padding:12px 22px;
+      border-bottom:1px solid var(--line); align-items:stretch; gap:0; z-index:1;
+    }
+    .law-hamburger[aria-expanded=true] ~ #law-nav { display:flex; flex-direction:column }
+    #law-nav button { text-align:left; min-height:42px }
+    body.law-minimal #design-hero:not([hidden]) { padding:43px 0 12px!important }
+    .law-minimal .photo-home-cards { grid-template-columns:repeat(2,minmax(0,1fr)) }
+    .law-minimal .photo-home-bottom { grid-template-columns:1fr }
+  }
+}
+
+@media screen {
+  body.law-minimal #design-hero > p { max-width:none!important; margin:20px auto 24px!important; font-size:clamp(1rem,2vw,1.24rem)!important }
+  body.law-minimal .photo-home-card { grid-template-columns:minmax(0,1fr)!important; gap:5px; padding:17px 20px 30px }
+  body.law-minimal .photo-home-card :is(strong,small) { grid-column:1!important; grid-row:auto!important; position:static!important }
+  .law-minimal .photo-home-card strong { white-space:nowrap }
+  body.law-minimal #panel-board > .subtabs { border:0!important; align-content:start; justify-content:start }
+  body.law-minimal #panel-board > .subtabs > button { flex:0 0 auto; border:0!important; border-radius:0!important; background:none!important; box-shadow:none!important }
+  body.law-minimal #panel-board > .subtabs > button.active .fc-title { color:var(--law-blue)!important; text-decoration:underline; text-underline-offset:4px }
+  body.law-minimal #panel-board > .subtabs .fc-icon { display:none!important }
+  body.law-minimal #panel-board > .subtabs .fc-title { color:var(--law-muted)!important }
+  body.law-minimal main .calc { background:#fff!important }
+  @media(max-width:800px) {
+    body.law-minimal #panel-home .photo-home-cards { grid-template-columns:repeat(2,minmax(0,1fr))!important }
+    body.law-minimal .photo-home-card { padding-inline:13px }
+  }
+}
+
+@media screen {
+  body.law-minimal footer.credit a { display:inline!important }
+  body.law-minimal #panel-board.active { box-shadow:none!important }
+  body.law-minimal #panel-board > .board-toolbar { background:var(--law-head)!important; color:var(--law-ink)!important }
+  body.law-minimal .beta-badge { background:#e2eaf4!important; color:var(--navy)!important }
+}
